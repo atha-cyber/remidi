@@ -88,8 +88,7 @@
                          onerror="this.style.display='none'">
 
                     <!-- SECRET ADMIN TRIGGER (CLICK 3 TIMES) -->
-                    <!-- PERUBAHAN: Onclick dihapus/diamankan agar tidak memicu reset -->
-                    <div id="admin-trophy" class="bg-gradient-to-br from-primary to-secondary p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/20 cursor-default select-none">
+                    <div id="admin-trophy" onclick="window.triggerAdminMode()" class="bg-gradient-to-br from-primary to-secondary p-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/20 cursor-pointer active:scale-90 transition-transform select-none">
                         <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"></path><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"></path><path d="M4 22h16"></path><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"></path><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"></path><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"></path></svg>
                     </div>
                     <div>
@@ -205,10 +204,6 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // --- SAFETY CONFIGURATION ---
-        // SET INI KE 'true' AGAR DATA TIDAK BISA DI-RESET ATAU DI-SEED ULANG SECARA TIDAK SENGAJA
-        const IS_PRODUCTION = true; 
-        
         // Constants
         const STORAGE_KEY_STATUS = 'poll_firebase_status_v1';
         const COLLECTION_NAME = 'candidates';
@@ -252,13 +247,7 @@
                 const q = query(collection(db, COLLECTION_NAME));
                 onSnapshot(q, async (snapshot) => {
                     if (snapshot.empty) {
-                        // JIKA KOSONG: Cek apakah boleh seeding
-                        // Hanya jalan jika BUKAN mode production
-                        if (!IS_PRODUCTION) {
-                            seedDatabase();
-                        } else {
-                            console.warn("Database kosong, tapi Seeding dimatikan karena Mode Produksi.");
-                        }
+                        seedDatabase();
                     } else {
                         const liveData = [];
                         snapshot.forEach((doc) => {
@@ -285,12 +274,8 @@
         }
 
         // --- SAFE SEEDING FUNCTION ---
-        // Fungsi ini sekarang mengecek double ke server sebelum menulis
         async function seedDatabase() {
-            if (IS_PRODUCTION) return; // Stop jika mode produksi
-
             console.log("Memulai Safe Seeding...");
-            // Cek sekali lagi secara manual ke server (bukan cache)
             const snapshot = await getDocs(collection(db, COLLECTION_NAME));
             
             if (!snapshot.empty) {
@@ -308,7 +293,7 @@
                     id: index + 1,
                     name: name,
                     subject: "Staf Pengajar",
-                    votes: 0, // Inisialisasi 0
+                    votes: 0,
                     color: COLORS[index % COLORS.length]
                 });
             });
@@ -317,7 +302,7 @@
             console.log("Database seeded successfully!");
         }
 
-        // --- RENDER FUNCTIONS (Sama seperti sebelumnya) ---
+        // --- RENDER FUNCTIONS ---
         window.renderTeachers = function(filter = "") {
             const container = document.getElementById('teachers-container');
             if (!container) return;
@@ -347,7 +332,7 @@
                         <div class="w-16 h-16 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-md overflow-hidden transition-transform group-hover:scale-105" style="background-color: ${t.color}">
                             <img src="${avatarSrc}" alt="${initial}" class="w-full h-full object-cover" onerror="this.src='https://ui-avatars.com/api/?name=${encodeURIComponent(t.name)}&background=${t.color.replace('#','')}&color=fff&size=128&font-size=0.35&bold=true'">
                         </div>
-                        ${hasVoted ? `<div class="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] font-bold h-6 min-w-[1.5rem] px-1.5 flex items-center justify-center rounded-full border-2 border-white shadow-sm z-10">${t.votes}</div>` : ''}
+                        ${hasVoted && t.votes > 0 ? `<div class="absolute -top-2 -right-2 bg-green-500 text-white text-[10px] font-bold h-6 min-w-[1.5rem] px-1.5 flex items-center justify-center rounded-full border-2 border-white shadow-sm z-10">${t.votes}</div>` : ''}
                     </div>
                     <div class="flex-1 min-w-0 py-1">
                         <h3 class="font-bold text-slate-800 text-base leading-tight mb-1 truncate">${t.name}</h3>
@@ -404,7 +389,6 @@
             
             if (!confirm("Konfirmasi Pilihan:\nYakin memilih guru ini?")) return;
 
-            // Optimistic UI
             hasVoted = true;
             updateStatusUI();
             
@@ -421,28 +405,62 @@
 
             } catch (error) {
                 console.error("Vote Error:", error);
-                hasVoted = false; // Revert
+                hasVoted = false;
                 updateStatusUI();
                 showToast("Gagal mengirim suara. Periksa koneksi.", true);
             }
         }
 
-        // --- ADMIN RESET (DIMATIKAN/DISABLED) ---
-        // Kode ini sengaja dikomentari/diubah agar tidak bisa dieksekusi di production
-        /* window.triggerAdminMode = function() {
-            // FITUR RESET DIMATIKAN DEMI KEAMANAN
-            console.log("Admin reset disabled in production mode.");
-        }
-        */
+        // --- ADMIN RESET (RESTORED) ---
+        let adminClickCount = 0;
+        let adminClickTimer;
 
-        // Fungsi Reset yang berbahaya dihapus dari akses global window
-        // Agar tidak bisa dipanggil lewat console browser
+        window.triggerAdminMode = function() {
+            const trophy = document.getElementById('admin-trophy');
+            trophy.classList.add('scale-90');
+            setTimeout(() => trophy.classList.remove('scale-90'), 150);
+
+            adminClickCount++;
+            clearTimeout(adminClickTimer);
+            adminClickTimer = setTimeout(() => { adminClickCount = 0; }, 2000);
+
+            if (adminClickCount >= 3) {
+                resetData();
+                adminClickCount = 0;
+            }
+        }
+
+        async function resetData() {
+            const password = prompt("🔐 ADMIN ACCESS (ONLINE)\nMasukkan Password Reset:");
+            if (password === "qwerty") {
+                if (confirm("⚠️ PERINGATAN KERAS\nSemua data di SERVER akan dihapus jadi 0.\nSemua orang bisa memilih ulang.\nLanjutkan?")) {
+                    try {
+                        showToast("Mereset data server...", false);
+                        
+                        const batch = writeBatch(db);
+                        teachers.forEach(t => {
+                            const docRef = doc(db, COLLECTION_NAME, t.id.toString());
+                            batch.update(docRef, { votes: 0 });
+                        });
+                        await batch.commit();
+
+                        localStorage.removeItem(STORAGE_KEY_STATUS);
+                        location.reload();
+                    } catch (e) {
+                        console.error("Reset Error:", e);
+                        showToast("Gagal mereset server.", true);
+                    }
+                }
+            } else if (password !== null) {
+                showToast("Password Salah!", true);
+            }
+        }
 
         // --- UI UTILS ---
         function updateTotalVotes() {
             const total = teachers.reduce((acc, curr) => acc + curr.votes, 0);
             const el = document.getElementById('total-votes-display');
-            if(el) el.innerText = total;
+            el.innerText = total;
         }
 
         function updateStatusUI() {
@@ -485,6 +503,7 @@
 
         document.getElementById('search-input').addEventListener('input', (e) => window.renderTeachers(e.target.value));
 
+        // Start
         init();
     </script>
 </body>
