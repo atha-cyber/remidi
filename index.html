@@ -112,6 +112,28 @@
             align-items: center; z-index: 10000; font-weight: bold; color: var(--primary);
             flex-direction: column;
         }
+        
+        /* RULE OVERLAY STYLES */
+        #rule-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffffff; z-index: 20000; display: flex; 
+            justify-content: center; align-items: center; padding: 20px;
+        }
+        .rule-box {
+            max-width: 500px; width: 100%;
+            background: white;
+            text-align: center;
+        }
+        .rule-list {
+            text-align: left;
+            margin: 20px 0;
+            background: #fff1f2;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid #fda4af;
+        }
+        .rule-list li { margin-bottom: 10px; color: #881337; font-weight: 500; }
+
         .spinner {
             width: 40px; height: 40px; border: 4px solid #e2e8f0; border-top: 4px solid var(--primary);
             border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 10px;
@@ -123,6 +145,26 @@
     </style>
 </head>
 <body oncontextmenu="return false;">
+
+<!-- RULE OVERLAY (PERINGATAN AWAL) -->
+<div id="rule-overlay">
+    <div class="rule-box">
+        <img src="https://cdn-icons-png.flaticon.com/512/1000/1000997.png" alt="Warning" style="width: 80px; margin-bottom: 15px;">
+        <h2 style="color: #be123c; margin: 0 0 10px 0;">PERATURAN UJIAN</h2>
+        <p style="color: #4b5563;">Harap baca aturan berikut sebelum memulai.</p>
+        
+        <ul class="rule-list">
+            <li>🚫 <b>Dilarang membuka tab lain</b> atau keluar dari aplikasi ini.</li>
+            <li>👀 Sistem memiliki <b>pendeteksi kecurangan</b> otomatis.</li>
+            <li>⚠️ Jika melanggar lebih dari <b>3 kali</b>, jawaban akan dikirim <b>OTOMATIS</b> dan ujian berakhir.</li>
+            <li>💾 Jawaban tersimpan otomatis meskipun halaman direfresh.</li>
+        </ul>
+
+        <button onclick="acceptRules()" class="btn-submit" style="background: #059669; margin-top: 0;">
+            SAYA MENGERTI & MULAI
+        </button>
+    </div>
+</div>
 
 <div id="loader" class="loading-overlay">
     <div class="spinner"></div>
@@ -222,13 +264,15 @@
     // --- VARIABEL STATE & CONFIG ---
     let isExamFinished = false; 
     let violationCount = 0;
+    let isRuleAccepted = false; // State untuk aturan
     const MAX_VIOLATIONS = 3;
 
     // Kunci Storage
-    const STORAGE_KEY = 'exam_english_7_backup';
-    const ORDER_KEY = 'exam_english_7_order_fixed'; // Urutan Soal
-    const VIOLATION_KEY = 'exam_english_7_violations'; // Anti Cheat
-    const STATUS_KEY = 'exam_english_7_status'; // Status Selesai
+    const STORAGE_KEY = 'exam_eng_7_data'; 
+    const ORDER_KEY = 'exam_eng_7_order'; 
+    const VIOLATION_KEY = 'exam_eng_7_violations'; 
+    const STATUS_KEY = 'exam_eng_7_status'; 
+    const RULE_ACCEPTED_KEY = 'exam_eng_7_rule_accepted';
 
     const firebaseConfig = {
       apiKey: "AIzaSyDy6E0FpxFAV8Fq2ayO1UWd2UMC19xLHgM",
@@ -246,7 +290,7 @@
     const COLLECTION_NAME = 'exam_results_english_7';
     const passwordGuru = "!@#$%^&*()"; 
 
-    // --- BANK SOAL ---
+    // --- BANK SOAL (SAMA SEPERTI SEBELUMNYA) ---
     const BANK_SOAL = [
         { id: 1, tanya: 'When do you say "Good morning"?', opsi: {A: "After lunch", B: "Before breakfast", C: "In the evening", D: "In the morning"}, kunci: "D" },
         { id: 2, tanya: "Which one is a common informal greeting between friends?", opsi: {A: "Good evening, Sir.", B: "How do you do?", C: "Hey, what's up?", D: "Nice to meet you."}, kunci: "C" },
@@ -302,29 +346,41 @@
     let currentUser = null;
     onAuthStateChanged(auth, (user) => { if(user) currentUser = user; });
 
-    // --- FUNGSI RESTORE STATE ---
-    // Dipanggil saat halaman dimuat
-    function restoreState() {
-        // 1. Restore Pelanggaran
-        const savedViolations = sessionStorage.getItem(VIOLATION_KEY);
+    // --- FUNGSI ATURAN ---
+    window.acceptRules = function() {
+        isRuleAccepted = true;
+        // Sembunyikan Overlay
+        document.getElementById('rule-overlay').style.display = 'none';
+        
+        // Simpan bahwa user sudah pernah menerima (opsional jika ingin persist antar refresh)
+        // Tapi lebih baik di-reset per sesi agar baca lagi jika refresh
+        // localStorage.setItem(RULE_ACCEPTED_KEY, 'true');
+    }
+
+    // --- FUNGSI UTAMA (INIT FLOW) ---
+    function startApp() {
+        // 1. Cek Pelanggaran dari LocalStorage
+        const savedViolations = localStorage.getItem(VIOLATION_KEY);
         if (savedViolations) {
             violationCount = parseInt(savedViolations, 10);
         }
 
-        // 2. Restore Status Selesai
-        const savedStatus = sessionStorage.getItem(STATUS_KEY);
+        // 2. Cek Status Selesai
+        const savedStatus = localStorage.getItem(STATUS_KEY);
         if (savedStatus === 'finished') {
             isExamFinished = true;
-            // Langsung lempar ke layar terkunci
-            document.querySelector('.header').style.display = 'none';
-            document.querySelector('.identity-box').style.display = 'none';
-            document.getElementById('examForm').style.display = 'none';
-            document.getElementById('locked-screen').style.display = 'block';
-            return; // Stop rendering soal jika sudah selesai
+            document.getElementById('rule-overlay').style.display = 'none'; // Sembunyikan rule jika sudah selesai
+            showLockedScreen();
+            return; 
         }
 
-        // 3. Jika belum selesai, Render Soal
+        // 3. Render Soal (Render di belakang layar, tunggu user klik Accept)
         renderQuestions();
+        loadProgress();
+        attachSaveListeners();
+
+        // Overlay Rule sudah visible by default di HTML
+        // Jadi tidak perlu logic tambahan untuk menampilkannya
     }
 
     // --- FUNGSI PENGACAK ARRAY ---
@@ -338,36 +394,24 @@
 
     // --- FUNGSI URUTAN TETAP (PERSISTENT SHUFFLE) ---
     function getFixedOrder() {
-        // Cek storage
-        const savedOrder = sessionStorage.getItem(ORDER_KEY);
-        
+        const savedOrder = localStorage.getItem(ORDER_KEY);
         if (savedOrder) {
             try {
                 const parsed = JSON.parse(savedOrder);
-                // Validasi jumlah soal
-                if(parsed.questionOrder.length === BANK_SOAL.length) {
-                    return parsed;
-                }
+                if(parsed.questionOrder.length === BANK_SOAL.length) return parsed;
             } catch(e) { }
         }
-
-        // Buat urutan baru jika belum ada
         const questionOrder = shuffleArray([...BANK_SOAL].map(s => s.id));
         const optionOrders = {};
-
-        BANK_SOAL.forEach(s => {
-            // Acak opsi
-            optionOrders[s.id] = shuffleArray(Object.keys(s.opsi));
-        });
-
+        BANK_SOAL.forEach(s => optionOrders[s.id] = shuffleArray(Object.keys(s.opsi)));
         const newOrder = { questionOrder, optionOrders };
-        sessionStorage.setItem(ORDER_KEY, JSON.stringify(newOrder));
+        localStorage.setItem(ORDER_KEY, JSON.stringify(newOrder));
         return newOrder;
     }
 
     // --- RENDER SOAL ---
     function renderQuestions() {
-        if (isExamFinished) return; // Guard clause
+        if (isExamFinished) return; 
 
         const container = document.getElementById('questions-container');
         container.innerHTML = ""; 
@@ -402,15 +446,9 @@
             html += `</div></div>`;
             container.innerHTML += html;
         });
-
-        attachSaveListeners();
-        loadProgress();
     }
 
-    // Panggil saat script dimuat
-    restoreState();
-
-    // --- LOGIKA SAVE & LOAD JAWABAN ---
+    // --- LOGIKA SAVE & LOAD JAWABAN (PERSISTENT) ---
     window.saveProgress = function() {
         if (isExamFinished) return;
         const formData = {
@@ -422,12 +460,12 @@
         document.querySelectorAll('input[type="radio"]:checked').forEach(radio => {
             formData.answers[radio.name] = radio.value;
         });
-        sessionStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(formData));
     }
 
     function loadProgress() {
         if (isExamFinished) return;
-        const savedData = sessionStorage.getItem(STORAGE_KEY);
+        const savedData = localStorage.getItem(STORAGE_KEY);
         if (savedData) {
             try {
                 const data = JSON.parse(savedData);
@@ -440,29 +478,33 @@
                         if (radio) radio.checked = true;
                     }
                 }
-            } catch (e) {}
+            } catch (e) { }
         }
     }
 
     function attachSaveListeners() {
-        const inputs = document.querySelectorAll('input');
-        inputs.forEach(input => {
-            input.addEventListener(input.type === 'radio' ? 'change' : 'input', window.saveProgress);
+        const textInputs = document.querySelectorAll('input[type="text"], input[type="number"]');
+        textInputs.forEach(input => input.addEventListener('input', window.saveProgress));
+        const container = document.getElementById('questions-container');
+        container.addEventListener('change', (e) => {
+            if (e.target.type === 'radio') {
+                window.saveProgress();
+                const card = e.target.closest('.question-card');
+                if(card) card.classList.remove('unanswered');
+            }
         });
     }
 
-    // --- ANTI CHEAT (FIXED) ---
+    // --- ANTI CHEAT ---
     document.addEventListener("visibilitychange", function() {
-        // Cek jika dokumen tersembunyi DAN ujian belum selesai
-        if (document.hidden && !isExamFinished) {
+        // HANYA jika aturan sudah disetujui DAN ujian belum selesai
+        if (document.hidden && !isExamFinished && isRuleAccepted) {
             violationCount++;
-            
-            // SIMPAN PELANGGARAN KE STORAGE (CRITICAL FIX)
-            sessionStorage.setItem(VIOLATION_KEY, violationCount);
+            localStorage.setItem(VIOLATION_KEY, violationCount);
 
             let sisa = MAX_VIOLATIONS - violationCount;
             if (violationCount < MAX_VIOLATIONS) {
-                alert(`⚠️ PERINGATAN KECURANGAN!\n\nPelanggaran ke-${violationCount} dari ${MAX_VIOLATIONS}.\nSisa kesempatan: ${sisa}.\nJangan keluar dari aplikasi!`);
+                alert(`⚠️ PERINGATAN KECURANGAN!\n\nAnda terdeteksi meninggalkan halaman.\nSisa kesempatan: ${sisa}.`);
             } else {
                 alert(`⛔ BATAS PELANGGARAN TERCAPAI!\nJawaban dikumpulkan OTOMATIS.`);
                 gradeExam();
@@ -475,7 +517,15 @@
         window.location.href = "https://www.google.com";
     }
 
-    // --- GRADE & SUBMIT (FIXED) ---
+    // --- HELPER UNTUK TAMPILAN TERKUNCI ---
+    function showLockedScreen() {
+        document.querySelector('.header').style.display = 'none';
+        document.querySelector('.identity-box').style.display = 'none';
+        document.getElementById('examForm').style.display = 'none';
+        document.getElementById('locked-screen').style.display = 'block';
+    }
+
+    // --- GRADE & SUBMIT ---
     window.gradeExam = async function() {
         if (!auth.currentUser) { alert("Menghubungkan server..."); return; }
 
@@ -514,29 +564,22 @@
 
         try {
             const docSnap = await getDoc(docRef);
-            if (docSnap.exists()) {
-                endProcess("Maaf, siswa ini SUDAH mengerjakan ujian."); return;
-            }
+            if (docSnap.exists()) { endProcess("Maaf, siswa ini SUDAH mengerjakan ujian."); return; }
             
             const q = query(collection(db, COLLECTION_NAME), where('nama', '==', finalNama));
             const querySnapshot = await getDocs(q);
             let dup = false;
             querySnapshot.forEach(d => { if(d.data().kelas === finalKelas) dup = true; });
-            
             if(dup) { endProcess(`Siswa ${finalNama} di kelas ${finalKelas} SUDAH ujian.`); return; }
 
         } catch (e) {
-            console.error(e);
             alert("Gagal koneksi. Coba lagi.");
             document.getElementById('loader').style.display = 'none';
             return;
         }
 
-        // --- FINALISASI UJIAN ---
         isExamFinished = true;
-        
-        // SIMPAN STATUS SELESAI KE STORAGE (CRITICAL FIX)
-        sessionStorage.setItem(STATUS_KEY, 'finished');
+        localStorage.setItem(STATUS_KEY, 'finished');
 
         let score = 0;
         BANK_SOAL.forEach(soal => {
@@ -557,23 +600,19 @@
 
         try {
             await setDoc(docRef, dataSiswa);
-            sessionStorage.removeItem(STORAGE_KEY);
-            // Opsional: Hapus urutan & pelanggaran agar bersih untuk sesi baru jika browser ditutup
-            // sessionStorage.removeItem(ORDER_KEY); 
-            // sessionStorage.removeItem(VIOLATION_KEY);
+            localStorage.removeItem(STORAGE_KEY);
+            localStorage.removeItem(ORDER_KEY);
+            localStorage.removeItem(VIOLATION_KEY);
             document.getElementById('examForm').reset();
         } catch(e) {
-            alert("Gagal simpan."); 
-            // Jangan reset isExamFinished jika gagal simpan, suruh coba lagi
-            document.getElementById('loader').style.display = 'none'; return;
+            alert("Gagal simpan data ke server. Coba lagi."); 
+            document.getElementById('loader').style.display = 'none'; 
+            isExamFinished = false; 
+            return; 
         }
 
         document.getElementById('loader').style.display = 'none';
-        
-        document.querySelector('.header').style.display = 'none';
-        document.querySelector('.identity-box').style.display = 'none';
-        document.getElementById('examForm').style.display = 'none';
-        document.getElementById('locked-screen').style.display = 'block';
+        showLockedScreen();
 
         document.getElementById('res-nama').innerText = finalNama;
         document.getElementById('res-kelas').innerText = finalKelas;
@@ -584,18 +623,15 @@
         const fb = document.getElementById('feedback-text');
         if(finalScore >= 70) { fb.innerText = "LULUS"; fb.style.color="green"; }
         else { fb.innerText = "BELUM LULUS"; fb.style.color="red"; }
-        
         window.scrollTo(0,0);
     }
 
     function endProcess(msg) {
         document.getElementById('loader').style.display = 'none';
         alert(msg);
-        sessionStorage.removeItem(STORAGE_KEY);
-        // Jangan reset form jika error duplikasi, biarkan siswa melihat
+        localStorage.removeItem(STORAGE_KEY); 
     }
 
-    // --- ADMIN & UI ---
     window.bukaHasilSiswa = function() {
         if(prompt("Password Guru:") === passwordGuru) {
             document.getElementById('locked-screen').style.display = 'none';
@@ -621,11 +657,8 @@
             const snap = await getDocs(collection(db, COLLECTION_NAME));
             let data = [];
             snap.forEach(d => data.push(d.data()));
-            
             if(data.length === 0) { tbody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>Kosong</td></tr>"; return; }
-            
             data.sort((a,b) => (a.kelas.localeCompare(b.kelas)) || (parseInt(a.absen) - parseInt(b.absen)));
-            
             tbody.innerHTML = "";
             data.forEach(d => {
                 tbody.innerHTML += `<tr>
@@ -655,17 +688,16 @@
         let data = [];
         snap.forEach(d => data.push(d.data()));
         if(data.length === 0) return alert("Data kosong");
-        
         data.sort((a,b) => (a.kelas.localeCompare(b.kelas)) || (parseInt(a.absen) - parseInt(b.absen)));
-        
         let csv = "Waktu,Nama,Kelas,Absen,Nilai,Kode\n";
         data.forEach(r => csv += `"${r.waktu}","${r.nama}","${r.kelas}","${r.absen}",${r.nilai},"${r.kode}"\n`);
-        
         const a = document.createElement("a");
         a.href = URL.createObjectURL(new Blob(["\uFEFF"+csv], {type: 'text/csv;charset=utf-8;'}));
         a.download = `Nilai_${new Date().toISOString().split('T')[0]}.csv`;
         a.click();
     }
+
+    startApp();
 
     setInterval(() => {
         if(document.documentElement.classList.contains('translated-ltr') || document.documentElement.classList.contains('translated-rtl')) {
