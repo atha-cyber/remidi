@@ -448,9 +448,9 @@
 
 <!-- LOGIKA APLIKASI -->
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getFirestore, collection, doc, setDoc, getDoc, getDocs, deleteDoc, query, where, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+    import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
     // --- CONFIG FIREBASE ---
     const firebaseConfig = {
@@ -647,13 +647,6 @@
             { id: 888, tanya: 'Kelincahan adalah kemampuan seseorang untuk dapat mengubah arah dengan cepat dan tepat tanpa kehilangan keseimbangan. Istilah keseimbangan sering disebut juga dengan ...', opsi: {A: "balance", B: "strength", C: "agility", D: "speed"}, kunci: "C" },
             { id: 889, tanya: 'Tes lari 12 menit adalah salah satu dari bentuk tes kebugaran jasmani yang berkaitan dengan daya tahan ....', opsi: {A: "otot perut", B: "otot lengan dan perut", C: "jantung dan paru", D: "serangan penyakit"}, kunci: "C" },
             { id: 890, tanya: 'Berikut yang  tidak  termasuk manfaat melakukan Latihan kebugaran Adalah....', opsi: {A: "Menyebabkan penyakit jantung", B: "menurunkan tekanan darah tinggi", C: "mengatasi depresi", D: "meningkatkan energi"}, kunci: "A" }
-        ],
-        "9-PJOK": [
-            { id: 951, tanya: 'Tes untuk mengukur daya tahan jantung dan paru-paru adalah...', opsi: {A: "Lari 12 menit", B: "Sprint 100m", C: "Push up", D: "Sit up"}, kunci: "A" },
-            { id: 952, tanya: 'Sikap lilin merupakan salah satu gerakan senam...', opsi: {A: "Irama", B: "Lantai", C: "Aerobik", D: "Alat"}, kunci: "B" },
-            { id: 953, tanya: 'Pukulan pertama dalam permainan bulu tangkis disebut...', opsi: {A: "Smash", B: "Lob", C: "Service", D: "Dropshot"}, kunci: "C" },
-            { id: 954, tanya: 'Gerakan guling depan sering disebut dengan istilah...', opsi: {A: "Back roll", B: "Forward roll", C: "Tiger sprong", D: "Headstand"}, kunci: "B" },
-            { id: 955, tanya: 'Penyakit HIV/AIDS menyerang sistem...', opsi: {A: "Pencernaan", B: "Pernapasan", C: "Kekebalan tubuh", D: "Saraf"}, kunci: "C" }
         ],
 
         // ================= PABP (PENDIDIKAN AGAMA) [NEW] =================
