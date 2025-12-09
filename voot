@@ -659,6 +659,52 @@
             { id: 890, tanya: 'Berikut yang  tidak  termasuk manfaat melakukan Latihan kebugaran Adalah....', opsi: {A: "Menyebabkan penyakit jantung", B: "menurunkan tekanan darah tinggi", C: "mengatasi depresi", D: "meningkatkan energi"}, kunci: "A" }
         ],
 
+        // ================= PABP (PENDIDIKAN AGAMA) [NEW] =================
+        "7-PABP": [
+            { id: 761, tanya: 'Rukun Iman ada berapa?', opsi: {A: "4", B: "5", C: "6", D: "7"}, kunci: "C" },
+            { id: 762, tanya: 'Sifat wajib bagi Allah yang berarti "Ada" adalah...', opsi: {A: "Wujud", B: "Qidam", C: "Baqa", D: "Wahdaniyat"}, kunci: "A" },
+            { id: 763, tanya: 'Nabi terakhir utusan Allah adalah...', opsi: {A: "Nabi Isa", B: "Nabi Musa", C: "Nabi Muhammad SAW", D: "Nabi Ibrahim"}, kunci: "C" },
+            { id: 764, tanya: 'Perilaku jujur disebut juga...', opsi: {A: "Amanah", B: "Siddiq", C: "Fatonah", D: "Tabligh"}, kunci: "B" },
+            { id: 765, tanya: 'Salat yang dikerjakan pada waktu siang hari adalah...', opsi: {A: "Subuh", B: "Maghrib", C: "Dzuhur", D: "Isya"}, kunci: "C" }
+        ],
+        "8-PABP": [
+            { id: 861, tanya: 'Meyakini adanya hari kiamat adalah rukun iman ke...', opsi: {A: "3", B: "4", C: "5", D: "6"}, kunci: "C" },
+            { id: 862, tanya: 'Kitab suci yang diturunkan kepada Nabi Daud AS adalah...', opsi: {A: "Taurat", B: "Zabur", C: "Injil", D: "Al-Quran"}, kunci: "B" },
+            { id: 863, tanya: 'Puasa wajib bagi umat Islam dilaksanakan pada bulan...', opsi: {A: "Syawal", B: "Rajab", C: "Ramadhan", D: "Muharram"}, kunci: "C" },
+            { id: 864, tanya: 'Sikap rendah hati disebut...', opsi: {A: "Takabur", B: "Tawadhu", C: "Hasad", D: "Riya"}, kunci: "B" },
+            { id: 865, tanya: 'Minuman keras hukumnya...', opsi: {A: "Halal", B: "Makruh", C: "Mubah", D: "Haram"}, kunci: "D" }
+        ],
+        "9-PABP": [
+            { id: 961, tanya: 'Qada dan Qadar berhubungan dengan...', opsi: {A: "Nasib", B: "Takdir", C: "Rezeki", D: "Umur"}, kunci: "B" },
+            { id: 962, tanya: 'Hari raya kurban disebut juga Idul...', opsi: {A: "Fitri", B: "Adha", C: "Milad", D: "Qurban"}, kunci: "B" },
+            { id: 963, tanya: 'Haji merupakan rukun Islam ke...', opsi: {A: "2", B: "3", C: "4", D: "5"}, kunci: "D" },
+            { id: 964, tanya: 'Sikap optimis adalah...', opsi: {A: "Mudah putus asa", B: "Yakin akan keberhasilan", C: "Pasrah", D: "Ragu-ragu"}, kunci: "B" },
+            { id: 965, tanya: 'Zakat yang dikeluarkan sebelum shalat Idul Fitri adalah zakat...', opsi: {A: "Mal", B: "Penghasilan", C: "Fitrah", D: "Emas"}, kunci: "C" }
+        ],
+
+        // ================= INFORMATIKA [NEW] =================
+        "7-INFO": [
+            { id: 771, tanya: 'Perangkat keras komputer disebut...', opsi: {A: "Software", B: "Hardware", C: "Brainware", D: "Freeware"}, kunci: "B" },
+            { id: 772, tanya: 'Tombol untuk menyalin (copy) adalah...', opsi: {A: "Ctrl + C", B: "Ctrl + V", C: "Ctrl + X", D: "Ctrl + P"}, kunci: "A" },
+            { id: 773, tanya: 'Contoh sistem operasi adalah...', opsi: {A: "Microsoft Word", B: "Windows", C: "Paint", D: "Google Chrome"}, kunci: "B" },
+            { id: 774, tanya: 'Alat untuk mengetik pada komputer adalah...', opsi: {A: "Mouse", B: "Monitor", C: "Keyboard", D: "Printer"}, kunci: "C" },
+            { id: 775, tanya: 'Otak dari komputer adalah...', opsi: {A: "RAM", B: "Harddisk", C: "CPU (Processor)", D: "VGA"}, kunci: "C" }
+        ],
+        "8-INFO": [
+            { id: 871, tanya: 'Jaringan komputer yang mencakup wilayah dunia adalah...', opsi: {A: "LAN", B: "MAN", C: "WAN/Internet", D: "PAN"}, kunci: "C" },
+            { id: 872, tanya: 'Media sosial untuk berbagi video pendek vertikal adalah...', opsi: {A: "Facebook", B: "TikTok", C: "Twitter", D: "LinkedIn"}, kunci: "B" },
+            { id: 873, tanya: 'Ekstensi file gambar adalah...', opsi: {A: ".docx", B: ".mp3", C: ".jpg", D: ".exe"}, kunci: "C" },
+            { id: 874, tanya: 'Aplikasi pengolah angka disebut...', opsi: {A: "Microsoft Word", B: "Microsoft Excel", C: "PowerPoint", D: "Paint"}, kunci: "B" },
+            { id: 875, tanya: 'Menyimpan data di internet disebut...', opsi: {A: "Cloud Storage", B: "Flashdisk", C: "Harddisk", D: "CD Room"}, kunci: "A" }
+        ],
+        "9-INFO": [
+            { id: 971, tanya: 'Sistem bilangan berbasis 2 (0 dan 1) disebut...', opsi: {A: "Desimal", B: "Oktal", C: "Biner", D: "Heksadesimal"}, kunci: "C" },
+            { id: 972, tanya: 'Algoritma sering digambarkan dengan...', opsi: {A: "Peta", B: "Flowchart", C: "Grafik", D: "Lukisan"}, kunci: "B" },
+            { id: 973, tanya: 'Browser untuk berselancar di internet contohnya...', opsi: {A: "Photoshop", B: "Google Chrome", C: "Winamp", D: "Calculator"}, kunci: "B" },
+            { id: 974, tanya: 'Kejahatan di dunia maya disebut...', opsi: {A: "Cybercrime", B: "Robbery", C: "Corruption", D: "Bullying"}, kunci: "A" },
+            { id: 975, tanya: 'Bahasa pemrograman yang populer untuk web adalah...', opsi: {A: "HTML", B: "English", C: "Bahasa", D: "Sunda"}, kunci: "A" }
+        ],
+
         // ================= MATEMATIKA [NEW] =================
         "7-MTK": [
             { id: 781, tanya: 'Hasil dari -5 + 12 adalah...', opsi: {A: "-7", B: "7", C: "17", D: "-17"}, kunci: "B" },
@@ -763,10 +809,53 @@
     const RULE_ACCEPTED_KEY = 'exam_rule_accepted_v2';
     const LEVEL_KEY = 'exam_selected_level_v2'; 
 
-    // INIT
+    // 1. DEFINISI FUNGSI POPULATE DROPDOWN (DIJALANKAN DI AWAL)
+    function populateIdentityDropdowns() {
+        try {
+            const classSelect = document.getElementById('studentClass');
+            const absenSelect = document.getElementById('studentAbsen');
+            
+            // Cek jika elemen tidak ditemukan atau sudah terisi
+            if (!classSelect || !absenSelect) return;
+            if (classSelect.options.length > 1) return;
+
+            // Kelas 7A-9E
+            const grades = [7, 8, 9];
+            const letters = ['A', 'B', 'C', 'D', 'E'];
+            
+            grades.forEach(g => {
+                const group = document.createElement('optgroup');
+                group.label = `Kelas ${g}`;
+                letters.forEach(l => {
+                    const opt = document.createElement('option');
+                    opt.value = `${g}${l}`;
+                    opt.text = `${g}${l}`;
+                    group.appendChild(opt);
+                });
+                classSelect.appendChild(group);
+            });
+
+            // Absen 1-35
+            for(let i=1; i<=35; i++) {
+                const opt = document.createElement('option');
+                opt.value = i;
+                opt.text = i;
+                absenSelect.appendChild(opt);
+            }
+        } catch(e) {
+            console.error("Gagal mengisi dropdown:", e);
+        }
+    }
+
+    // 2. JALANKAN SEGERA (Agar tidak menunggu Firebase)
+    populateIdentityDropdowns();
+    // Cadangan jika DOM belum siap saat script dijalankan
+    window.addEventListener('DOMContentLoaded', populateIdentityDropdowns);
+
+    // INIT FIREBASE AUTH
     async function initAuth() {
         try { await signInAnonymously(auth); } 
-        catch (error) { console.error("Login gagal", error); }
+        catch (error) { console.error("Login gagal (cek domain di Firebase Console):", error); }
     }
     initAuth();
 
@@ -1310,7 +1399,7 @@
                 groups.forEach(group => {
                     const mapelCode = group.getAttribute('data-mapel');
                     if (mapelCode && hiddenList.includes(mapelCode)) {
-                        // HAPUS DARI DOM (Fix untuk Mobile)
+                        // HAPUS DARI DOM (Fix untuk Mobile agar opsi benar-benar hilang)
                         group.remove(); 
                     }
                 });
@@ -1383,46 +1472,14 @@
         }
     }
 
-    // --- FUNGSI ISI DROPDOWN OTOMATIS (NEW) ---
-    function populateIdentityDropdowns() {
-        const classSelect = document.getElementById('studentClass');
-        const absenSelect = document.getElementById('studentAbsen');
-        
-        // Cek jika sudah ada opsi (biar tidak duplikat saat reload/hot-reload)
-        if(classSelect.options.length > 1) return;
-
-        // Kelas 7A-9E
-        const grades = [7, 8, 9];
-        const letters = ['A', 'B', 'C', 'D', 'E'];
-        
-        grades.forEach(g => {
-            const group = document.createElement('optgroup');
-            group.label = `Kelas ${g}`;
-            letters.forEach(l => {
-                const opt = document.createElement('option');
-                opt.value = `${g}${l}`;
-                opt.text = `${g}${l}`;
-                group.appendChild(opt);
-            });
-            classSelect.appendChild(group);
-        });
-
-        // Absen 1-35
-        for(let i=1; i<=35; i++) {
-            const opt = document.createElement('option');
-            opt.value = i;
-            opt.text = i;
-            absenSelect.appendChild(opt);
-        }
-    }
-
     // --- START APP ---
     function startApp() {
         populateIdentityDropdowns(); // Generate opsi dulu
         
         // Simpan HTML asli sebelum sync berjalan
         if (!originalMapelHTML) {
-             originalMapelHTML = document.getElementById('examLevel').innerHTML;
+             const el = document.getElementById('examLevel');
+             if(el) originalMapelHTML = el.innerHTML;
         }
 
         // Sync options visibility on load
@@ -1446,7 +1503,8 @@
 
         const savedLevel = storage.getItem(LEVEL_KEY);
         if(savedLevel) {
-            document.getElementById('examLevel').value = ""; 
+            const el = document.getElementById('examLevel');
+            if(el) el.value = ""; 
         }
         
         attachSaveListeners();
