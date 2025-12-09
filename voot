@@ -432,7 +432,9 @@
                 </div>
             </div>
 
-            <button onclick="downloadCSV()" style="background:#059669; color:white; border:none; border-radius:8px;">📥 Download Excel (Otomatis Urut)</button>
+            <button onclick="downloadExcel()" style="background:#059669; color:white; border:none; border-radius:8px; padding: 12px; width: 100%; font-weight:bold; margin-bottom: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                📥 Download Excel (.xls) - Urut Kelas 7-9
+            </button>
             <button onclick="hapusData()" style="background:#dc2626; color:white; border:none; border-radius:8px;">🗑️ Hapus Semua Data Nilai</button>
             <button onclick="tutupAdmin()" style="background:#6b7280; color:white; border:none; border-radius:8px;">Tutup Panel</button>
         </div>
@@ -647,52 +649,6 @@
             { id: 888, tanya: 'Kelincahan adalah kemampuan seseorang untuk dapat mengubah arah dengan cepat dan tepat tanpa kehilangan keseimbangan. Istilah keseimbangan sering disebut juga dengan ...', opsi: {A: "balance", B: "strength", C: "agility", D: "speed"}, kunci: "C" },
             { id: 889, tanya: 'Tes lari 12 menit adalah salah satu dari bentuk tes kebugaran jasmani yang berkaitan dengan daya tahan ....', opsi: {A: "otot perut", B: "otot lengan dan perut", C: "jantung dan paru", D: "serangan penyakit"}, kunci: "C" },
             { id: 890, tanya: 'Berikut yang  tidak  termasuk manfaat melakukan Latihan kebugaran Adalah....', opsi: {A: "Menyebabkan penyakit jantung", B: "menurunkan tekanan darah tinggi", C: "mengatasi depresi", D: "meningkatkan energi"}, kunci: "A" }
-        ],
-
-        // ================= PABP (PENDIDIKAN AGAMA) [NEW] =================
-        "7-PABP": [
-            { id: 761, tanya: 'Rukun Iman ada berapa?', opsi: {A: "4", B: "5", C: "6", D: "7"}, kunci: "C" },
-            { id: 762, tanya: 'Sifat wajib bagi Allah yang berarti "Ada" adalah...', opsi: {A: "Wujud", B: "Qidam", C: "Baqa", D: "Wahdaniyat"}, kunci: "A" },
-            { id: 763, tanya: 'Nabi terakhir utusan Allah adalah...', opsi: {A: "Nabi Isa", B: "Nabi Musa", C: "Nabi Muhammad SAW", D: "Nabi Ibrahim"}, kunci: "C" },
-            { id: 764, tanya: 'Perilaku jujur disebut juga...', opsi: {A: "Amanah", B: "Siddiq", C: "Fatonah", D: "Tabligh"}, kunci: "B" },
-            { id: 765, tanya: 'Salat yang dikerjakan pada waktu siang hari adalah...', opsi: {A: "Subuh", B: "Maghrib", C: "Dzuhur", D: "Isya"}, kunci: "C" }
-        ],
-        "8-PABP": [
-            { id: 861, tanya: 'Meyakini adanya hari kiamat adalah rukun iman ke...', opsi: {A: "3", B: "4", C: "5", D: "6"}, kunci: "C" },
-            { id: 862, tanya: 'Kitab suci yang diturunkan kepada Nabi Daud AS adalah...', opsi: {A: "Taurat", B: "Zabur", C: "Injil", D: "Al-Quran"}, kunci: "B" },
-            { id: 863, tanya: 'Puasa wajib bagi umat Islam dilaksanakan pada bulan...', opsi: {A: "Syawal", B: "Rajab", C: "Ramadhan", D: "Muharram"}, kunci: "C" },
-            { id: 864, tanya: 'Sikap rendah hati disebut...', opsi: {A: "Takabur", B: "Tawadhu", C: "Hasad", D: "Riya"}, kunci: "B" },
-            { id: 865, tanya: 'Minuman keras hukumnya...', opsi: {A: "Halal", B: "Makruh", C: "Mubah", D: "Haram"}, kunci: "D" }
-        ],
-        "9-PABP": [
-            { id: 961, tanya: 'Qada dan Qadar berhubungan dengan...', opsi: {A: "Nasib", B: "Takdir", C: "Rezeki", D: "Umur"}, kunci: "B" },
-            { id: 962, tanya: 'Hari raya kurban disebut juga Idul...', opsi: {A: "Fitri", B: "Adha", C: "Milad", D: "Qurban"}, kunci: "B" },
-            { id: 963, tanya: 'Haji merupakan rukun Islam ke...', opsi: {A: "2", B: "3", C: "4", D: "5"}, kunci: "D" },
-            { id: 964, tanya: 'Sikap optimis adalah...', opsi: {A: "Mudah putus asa", B: "Yakin akan keberhasilan", C: "Pasrah", D: "Ragu-ragu"}, kunci: "B" },
-            { id: 965, tanya: 'Zakat yang dikeluarkan sebelum shalat Idul Fitri adalah zakat...', opsi: {A: "Mal", B: "Penghasilan", C: "Fitrah", D: "Emas"}, kunci: "C" }
-        ],
-
-        // ================= INFORMATIKA [NEW] =================
-        "7-INFO": [
-            { id: 771, tanya: 'Perangkat keras komputer disebut...', opsi: {A: "Software", B: "Hardware", C: "Brainware", D: "Freeware"}, kunci: "B" },
-            { id: 772, tanya: 'Tombol untuk menyalin (copy) adalah...', opsi: {A: "Ctrl + C", B: "Ctrl + V", C: "Ctrl + X", D: "Ctrl + P"}, kunci: "A" },
-            { id: 773, tanya: 'Contoh sistem operasi adalah...', opsi: {A: "Microsoft Word", B: "Windows", C: "Paint", D: "Google Chrome"}, kunci: "B" },
-            { id: 774, tanya: 'Alat untuk mengetik pada komputer adalah...', opsi: {A: "Mouse", B: "Monitor", C: "Keyboard", D: "Printer"}, kunci: "C" },
-            { id: 775, tanya: 'Otak dari komputer adalah...', opsi: {A: "RAM", B: "Harddisk", C: "CPU (Processor)", D: "VGA"}, kunci: "C" }
-        ],
-        "8-INFO": [
-            { id: 871, tanya: 'Jaringan komputer yang mencakup wilayah dunia adalah...', opsi: {A: "LAN", B: "MAN", C: "WAN/Internet", D: "PAN"}, kunci: "C" },
-            { id: 872, tanya: 'Media sosial untuk berbagi video pendek vertikal adalah...', opsi: {A: "Facebook", B: "TikTok", C: "Twitter", D: "LinkedIn"}, kunci: "B" },
-            { id: 873, tanya: 'Ekstensi file gambar adalah...', opsi: {A: ".docx", B: ".mp3", C: ".jpg", D: ".exe"}, kunci: "C" },
-            { id: 874, tanya: 'Aplikasi pengolah angka disebut...', opsi: {A: "Microsoft Word", B: "Microsoft Excel", C: "PowerPoint", D: "Paint"}, kunci: "B" },
-            { id: 875, tanya: 'Menyimpan data di internet disebut...', opsi: {A: "Cloud Storage", B: "Flashdisk", C: "Harddisk", D: "CD Room"}, kunci: "A" }
-        ],
-        "9-INFO": [
-            { id: 971, tanya: 'Sistem bilangan berbasis 2 (0 dan 1) disebut...', opsi: {A: "Desimal", B: "Oktal", C: "Biner", D: "Heksadesimal"}, kunci: "C" },
-            { id: 972, tanya: 'Algoritma sering digambarkan dengan...', opsi: {A: "Peta", B: "Flowchart", C: "Grafik", D: "Lukisan"}, kunci: "B" },
-            { id: 973, tanya: 'Browser untuk berselancar di internet contohnya...', opsi: {A: "Photoshop", B: "Google Chrome", C: "Winamp", D: "Calculator"}, kunci: "B" },
-            { id: 974, tanya: 'Kejahatan di dunia maya disebut...', opsi: {A: "Cybercrime", B: "Robbery", C: "Corruption", D: "Bullying"}, kunci: "A" },
-            { id: 975, tanya: 'Bahasa pemrograman yang populer untuk web adalah...', opsi: {A: "HTML", B: "English", C: "Bahasa", D: "Sunda"}, kunci: "A" }
         ],
 
         // ================= MATEMATIKA [NEW] =================
@@ -1770,33 +1726,138 @@
         }
     }
 
-    // --- REVISI: LOGIC DOWNLOAD LEBIH RAPI & FORCE WIB FILENAME ---
-    window.downloadCSV = async function() {
-        if(!auth.currentUser) return;
-        const snap = await getDocs(collection(db, COLLECTION_NAME));
-        let data = [];
-        snap.forEach(d => data.push(d.data()));
-        if(data.length === 0) return alert("Data kosong");
+    // --- PERBAIKAN: DOWNLOAD EXCEL (.XLS) & SORTING CERDAS ---
+    window.downloadExcel = async function() {
+        if(!auth.currentUser) return alert("Anda harus login sebagai admin!");
         
-        // SORTING (Mapel -> Kelas -> Absen)
-        data.sort((a,b) => {
-            const levelA = a.level_soal || "0";
-            const levelB = b.level_soal || "0";
-            if(levelA !== levelB) return levelA.localeCompare(levelB);
-            const kelasCompare = a.kelas.localeCompare(b.kelas, undefined, { numeric: true, sensitivity: 'base' });
-            if(kelasCompare !== 0) return kelasCompare;
-            return parseInt(a.absen) - parseInt(b.absen);
-        });
+        // Ubah teks tombol biar terlihat loading
+        const btn = document.activeElement;
+        const oldText = btn.innerText;
+        btn.innerText = "⏳ Mengambil semua data...";
         
-        let csv = "Mapel,Waktu,Nama,Kelas,Absen,Nilai,Kode\n";
-        data.forEach(r => csv += `"${r.level_soal||''}","${r.waktu}","${r.nama}","${r.kelas}","${r.absen}",${r.nilai},"${r.kode}"\n`);
-        
-        const a = document.createElement("a");
-        a.href = URL.createObjectURL(new Blob(["\uFEFF"+csv], {type: 'text/csv;charset=utf-8;'}));
-        
-        const nowWIB = new Date().toLocaleString('en-GB', { timeZone: 'Asia/Jakarta' }).split(',')[0].split('/').reverse().join('-');
-        a.download = `Nilai_Lengkap_${nowWIB}.csv`;
-        a.click();
+        try {
+            // 1. AMBIL SEMUA DATA (Pastikan tidak ada limit)
+            const snap = await getDocs(collection(db, COLLECTION_NAME));
+            let data = [];
+            
+            // Loop semua dokumen yang ada di database
+            snap.forEach(doc => {
+                data.push(doc.data());
+            });
+
+            if(data.length === 0) {
+                alert("Database Kosong! Belum ada siswa yang mengerjakan.");
+                btn.innerText = oldText;
+                return;
+            }
+
+            // 2. LOGIKA SORTING (KELAS 7A -> 9E)
+            // Format di database: "7-IPA - 7A" -> Kita ambil bagian belakang "7A"
+            data.sort((a, b) => {
+                // Fungsi untuk mengambil "7A" dari string panjang
+                const getClassOnly = (fullString) => {
+                    if(!fullString) return "";
+                    const parts = fullString.split('-'); 
+                    // Ambil elemen terakhir, hapus spasi, uppercase
+                    return parts[parts.length - 1].trim().toUpperCase(); 
+                };
+
+                const classA = getClassOnly(a.kelas); // Misal: "7A"
+                const classB = getClassOnly(b.kelas); // Misal: "8B"
+
+                // Pisahkan Angka (7) dan Huruf (A)
+                const splitClass = (str) => {
+                    const match = str.match(/^(\d+)([A-Z]*)/); // Regex ambil angka depan
+                    if(match) return { num: parseInt(match[1]), char: match[2] };
+                    return { num: 999, char: str }; // Fallback jika format aneh
+                };
+
+                const parseA = splitClass(classA);
+                const parseB = splitClass(classB);
+
+                // A. Urutkan berdasarkan Angka Kelas (7, 8, 9)
+                if (parseA.num !== parseB.num) {
+                    return parseA.num - parseB.num;
+                }
+                
+                // B. Jika Angka sama, urutkan berdasarkan Huruf Kelas (A, B, C...)
+                if (parseA.char !== parseB.char) {
+                    return parseA.char.localeCompare(parseB.char);
+                }
+
+                // C. Jika Kelas persis sama, urutkan Absen (1, 2, 3...)
+                return parseInt(a.absen) - parseInt(b.absen);
+            });
+
+            // 3. BUAT FORMAT EXCEL (MENGGUNAKAN HTML TABLE)
+            // Ini trik agar file .xls rapi ada kolom-kolomnya
+            let table = `
+                <table border="1">
+                    <thead>
+                        <tr style="background-color: #4f46e5; color: white;">
+                            <th>No</th>
+                            <th>Waktu Submit (WIB)</th>
+                            <th>Nama Lengkap</th>
+                            <th>Kelas (Input)</th>
+                            <th>Paket Soal</th>
+                            <th>No. Absen</th>
+                            <th>Nilai</th>
+                            <th>Kode Validasi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            data.forEach((row, index) => {
+                // Bersihkan string agar tidak merusak HTML
+                const safeNama = (row.nama || "").replace(/</g, "&lt;");
+                const safeKelas = (row.kelas || "").replace(/</g, "&lt;");
+                
+                // Ambil kelas bersih (misal "7A") untuk kolom tabel
+                const cleanKelas = safeKelas.split('-').pop().trim();
+
+                table += `
+                    <tr>
+                        <td style="text-align:center;">${index + 1}</td>
+                        <td>${row.waktu || '-'}</td>
+                        <td>${safeNama}</td>
+                        <td style="text-align:center;">${cleanKelas}</td>
+                        <td>${row.level_soal || '-'}</td>
+                        <td style="text-align:center;">${row.absen}</td>
+                        <td style="text-align:center; font-weight:bold;">${row.nilai}</td>
+                        <td style="font-family:monospace;">${row.kode}</td>
+                    </tr>
+                `;
+            });
+
+            table += `</tbody></table>`;
+
+            // 4. PROSES DOWNLOAD BLOB
+            const blob = new Blob(['\ufeff', table], {
+                type: 'application/vnd.ms-excel' // MIME type agar dibaca sebagai Excel
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // Nama file dinamis dengan tanggal
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('id-ID').replace(/\//g, '-');
+            const timeStr = now.toLocaleTimeString('id-ID').replace(/:/g, '.');
+            a.download = `Rekap_Nilai_SMP4_${dateStr}_${timeStr}.xls`;
+            
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            btn.innerText = oldText;
+
+        } catch(e) {
+            console.error(e);
+            alert("Gagal download: " + e.message);
+            btn.innerText = oldText;
+        }
     }
 
     startApp();
