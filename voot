@@ -183,7 +183,6 @@
         <ul class="rule-list">
             <!-- FITUR DIMATIKAN: Larangan Tab Lain dihapus dari list -->
             <li>📍 <b>Wajib berada di lingkungan sekolah</b>. GPS akan dicek.</li>
-            <li>👀 <b>Perhatian:</b> Membuka tab lain diperbolehkan.</li>
             <li>💾 Jawaban tersimpan saat <b>Refresh</b>, tapi <b>HILANG</b> jika tab/browser <b>DITUTUP</b>.</li>
         </ul>
 
