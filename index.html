@@ -112,9 +112,7 @@
 
     <!-- MAIN LAYOUT -->
     <div class="split-container flex flex-col md:flex-row relative">
-        
-        <!-- KIRI / ATAS: Soal PDF (DIBUAT LEBIH DOMINAN) -->
-        <!-- Perubahan: h-[65%] di HP (sebelumnya 40%), md:w-[70%] di Desktop (sebelumnya 60%) -->
+        <!-- KIRI / ATAS: Soal PDF (DOMINAN 65% di HP, 70% di PC) -->
         <div class="w-full h-[65%] md:h-full md:w-[70%] bg-slate-800 relative z-10 border-b-4 border-slate-900 md:border-b-0 md:border-r-4 group">
             <iframe id="pdfFrame" src="" class="w-full h-full" frameborder="0"></iframe>
             <div id="pdfPlaceholder" class="absolute inset-0 flex items-center justify-center text-slate-500 hidden bg-slate-100">
@@ -128,8 +126,7 @@
             </button>
         </div>
 
-        <!-- KANAN / BAWAH: LJK (DIPERKECIL) -->
-        <!-- Perubahan: h-[35%] di HP (sebelumnya 60%), md:w-[30%] di Desktop (sebelumnya 40%) -->
+        <!-- KANAN / BAWAH: LJK (KECIL 35% di HP, 30% di PC) -->
         <div class="w-full h-[35%] md:h-full md:w-[30%] bg-white flex flex-col z-20 shadow-2xl relative">
             <div class="p-3 bg-blue-50 border-b border-blue-100 flex flex-col gap-2 shrink-0">
                 
@@ -157,7 +154,7 @@
 
             <div class="p-3 bg-white border-t border-slate-200 shadow-[0_-5px_15px_rgba(0,0,0,0.1)] z-30">
                 <button onclick="window.submitExam()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition flex justify-center items-center gap-2">
-                    <i class="fas fa-paper-plane"></i> SELESAI & KIRIM
+                    <i class="fas fa-paper-plane"></i> KIRIM
                 </button>
             </div>
         </div>
@@ -416,10 +413,19 @@
             form.innerHTML = ''; // Reset
             for(let i=1; i<=JUMLAH_SOAL; i++){
                 const div = document.createElement('div');
-                div.className = 'bg-white p-2 rounded border shadow-sm';
+                div.className = 'bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between hover:bg-blue-50 transition';
                 div.innerHTML = `
-                    <div class="flex justify-between mb-1"><span class="text-xs font-bold text-slate-600">${i}.</span></div>
-                    <div class="flex gap-1">${OPSI.map(o => `<label class="flex-1 cursor-pointer"><input type="radio" name="q${i}" value="${o}" class="sr-only option-radio"><div class="h-8 rounded border flex items-center justify-center font-bold text-xs text-slate-500 hover:bg-slate-50">${o}</div></label>`).join('')}</div>
+                    <div class="w-8 text-center font-bold text-slate-600 text-sm">${i}.</div>
+                    <div class="flex-1 flex justify-around pl-4">
+                        ${OPSI.map(o => `
+                            <label class="cursor-pointer relative group">
+                                <input type="radio" name="q${i}" value="${o}" class="sr-only option-radio">
+                                <div class="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center font-bold text-slate-500 transition-all hover:border-blue-400">
+                                    ${o}
+                                </div>
+                            </label>
+                        `).join('')}
+                    </div>
                 `;
                 form.appendChild(div);
             }
