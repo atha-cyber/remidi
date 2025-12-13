@@ -612,8 +612,8 @@
             const cleanUrl = sub.url ? sub.url.trim() : '';
 
             if (cleanUrl) {
-                // ADD ZOOM 800%
-                const gView = `https://docs.google.com/viewer?url=${cleanUrl}&embedded=true&pct=800`;
+                // ADD ZOOM 1500% (15x)
+                const gView = `https://docs.google.com/viewer?url=${cleanUrl}&embedded=true&pct=1500`; 
                 if(frame.src !== gView) frame.src = gView;
                 ph.classList.add('hidden');
             } else {
