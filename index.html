@@ -132,7 +132,6 @@
         <!-- KANAN / BAWAH: LJK (KECIL 35% di HP, 30% di PC) -->
         <div class="w-full h-[35%] md:h-full md:w-[30%] bg-white flex flex-col z-20 shadow-2xl relative">
             <!-- AREA JAWABAN -->
-            <!-- Tambahkan padding bawah (pb-40) agar tombol kirim tidak ketutup -->
             <div class="flex-1 overflow-y-auto custom-scroll p-2 bg-slate-50 relative">
                 <form id="ljkForm" class="grid grid-cols-1 gap-2 pb-40"></form>
             </div>
@@ -253,6 +252,7 @@
                                         <th class="px-3 py-2">Kls</th>
                                         <th class="px-3 py-2">No</th>
                                         <th class="px-3 py-2">Nilai</th>
+                                        <th class="px-3 py-2 text-center">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="scoreTableBody"></tbody>
@@ -295,7 +295,7 @@
     <script type="module">
         // Import Firebase SDK
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, getDocs, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+        import { getFirestore, doc, getDoc, setDoc, collection, addDoc, deleteDoc, getDocs, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
         import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
         // --- KONFIGURASI FIREBASE ---
@@ -383,20 +383,9 @@
             }
 
             studentData = { name, class: kelas, number };
-            updateStudentDisplay();
+            // updateStudentDisplay(); // REMOVED as UI elements are gone
             window.closeModal('loginOverlay');
             window.checkAccess();
-        }
-
-        function updateStudentDisplay() {
-            // Updated to check for element existence before setting text
-            const nameEl = document.getElementById('displayStudentName');
-            const classEl = document.getElementById('displayClass');
-            const numEl = document.getElementById('displayNumber');
-            
-            if(nameEl) nameEl.innerText = studentData.name;
-            if(classEl) classEl.innerText = studentData.class;
-            if(numEl) numEl.innerText = studentData.number;
         }
 
         window.initLJK = function() {
@@ -661,9 +650,21 @@
                 timestamp: Date.now() // For sorting
             };
 
+            // CREATE UNIQUE ID TO PREVENT DUPLICATES
+            const sanitize = (str) => str.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
+            const uniqueDocId = `${sanitize(sub.name)}_${sanitize(studentData.class)}_${sanitize(studentData.number)}_${sanitize(studentData.name)}`;
+            const docRef = doc(db, RESULTS_COLLECTION, uniqueDocId);
+
             // Save to Firebase
             try {
-                await addDoc(collection(db, RESULTS_COLLECTION), resultData);
+                // Check duplicate check BEFORE writing
+                const docSnap = await getDoc(docRef);
+                if (docSnap.exists()) {
+                    alert("⛔ AKSES DITOLAK!\n\nAnda sudah tercatat mengerjakan ujian ini sebelumnya.\nJika ini kesalahan, hubungi Guru/Pengawas untuk reset data.");
+                    return;
+                }
+
+                await setDoc(docRef, resultData);
                 
                 document.getElementById('resMapelName').innerText = sub.name;
                 document.getElementById('resScore').innerText = score;
@@ -726,7 +727,7 @@
 
         window.refreshRekap = async function() {
             const tbody = document.getElementById('scoreTableBody');
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4">Memuat data dari server...</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center p-4">Memuat data dari server...</td></tr>';
             
             try {
                 const q = query(collection(db, RESULTS_COLLECTION), orderBy('timestamp', 'desc'));
@@ -736,12 +737,13 @@
                 examHistory = []; // Reset local cache for export
 
                 if(querySnapshot.empty) {
-                    tbody.innerHTML = '<tr><td colspan="6" class="text-center p-4">Belum ada data nilai.</td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="7" class="text-center p-4">Belum ada data nilai.</td></tr>';
                     return;
                 }
 
-                querySnapshot.forEach((doc) => {
-                    const row = doc.data();
+                querySnapshot.forEach((docSnap) => {
+                    const row = docSnap.data();
+                    const docId = docSnap.id;
                     examHistory.push(row); // Cache
                     tbody.innerHTML += `
                         <tr class="bg-white border-b hover:bg-slate-50 text-xs">
@@ -751,12 +753,30 @@
                             <td class="px-3 py-2">${row.class}</td>
                             <td class="px-3 py-2">${row.number}</td>
                             <td class="px-3 py-2 font-bold text-blue-600">${row.score}</td>
+                            <td class="px-3 py-2 text-center">
+                                <button onclick="window.deleteStudentData('${docId}', '${row.name}')" class="bg-red-100 text-red-600 px-2 py-1 rounded hover:bg-red-200 text-[10px] border border-red-200 font-bold transition">
+                                    <i class="fas fa-trash-alt mr-1"></i> Reset
+                                </button>
+                            </td>
                         </tr>
                     `;
                 });
             } catch(e) {
                 console.error(e);
-                tbody.innerHTML = '<tr><td colspan="6" class="text-center text-red-500 p-4">Gagal memuat data.</td></tr>';
+                tbody.innerHTML = '<tr><td colspan="7" class="text-center text-red-500 p-4">Gagal memuat data.</td></tr>';
+            }
+        }
+
+        // Add Delete Function for Admin
+        window.deleteStudentData = async function(docId, studentName) {
+            if(!confirm(`⚠️ PERINGATAN!\n\nAnda akan menghapus data ujian siswa:\nNama: ${studentName}\n\nTindakan ini akan mengizinkan siswa tersebut untuk MENGERJAKAN ULANG ujian.\n\nLanjutkan?`)) return;
+
+            try {
+                await deleteDoc(doc(db, RESULTS_COLLECTION, docId));
+                alert(`✅ Data ${studentName} berhasil direset.`);
+                window.refreshRekap(); // Refresh table immediately
+            } catch(e) {
+                alert("❌ Gagal menghapus: " + e.message);
             }
         }
 
