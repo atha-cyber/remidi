@@ -19,7 +19,7 @@
             transform: scale(1.05);
         }
 
-        body { overscroll-behavior: none; }
+        body { overscroll-behavior: none; } /* User select handled by JS if anti-cheat on */
         .split-container { height: calc(100dvh - 50px); } 
         
         .tab-btn.active { background-color: #2563eb; color: white; border-color: #2563eb; }
@@ -30,12 +30,26 @@
             background: rgba(255,255,255,0.95); z-index: 9999;
             display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
+        #location-loader {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.85); z-index: 9999;
+            display: none; flex-direction: column; justify-content: center; align-items: center; color: white;
+        }
         .spinner {
             width: 40px; height: 40px; border: 4px solid #e2e8f0; 
             border-top: 4px solid #2563eb; border-radius: 50%; 
             animation: spin 1s linear infinite; margin-bottom: 10px;
         }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+
+        /* WARNING OVERLAY (ANTI-CHEAT) */
+        #cheatOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(220, 38, 38, 0.95); /* RED BACKGROUND */
+            z-index: 200; display: none;
+            flex-direction: column; justify-content: center; align-items: center;
+            color: white; text-align: center; padding: 20px;
+        }
     </style>
 </head>
 <body class="bg-gray-100 h-screen overflow-hidden font-sans text-gray-800">
@@ -46,11 +60,37 @@
         <p class="text-blue-600 font-bold text-sm animate-pulse">Menghubungkan Server...</p>
     </div>
 
+    <!-- LOCATION LOADER -->
+    <div id="location-loader">
+        <i class="fas fa-map-marker-alt text-4xl text-red-500 mb-4 animate-bounce"></i>
+        <p class="font-bold text-lg">Memeriksa Lokasi Anda...</p>
+        <p class="text-xs text-gray-400 mt-2">Pastikan GPS aktif & izinkan akses lokasi browser</p>
+    </div>
+
+    <!-- ANTI-CHEAT WARNING OVERLAY -->
+    <div id="cheatOverlay">
+        <i class="fas fa-exclamation-triangle text-6xl mb-4 text-yellow-300 animate-bounce"></i>
+        <h2 class="text-3xl font-bold mb-2">PELANGGARAN TERDETEKSI!</h2>
+        <p class="text-lg mb-6">Anda terdeteksi meninggalkan halaman ujian.</p>
+        
+        <div class="bg-white/20 p-4 rounded-lg border border-white/30 mb-6">
+            <p class="text-sm font-bold uppercase tracking-widest">Sisa Nyawa</p>
+            <div class="flex justify-center gap-2 mt-2 text-2xl" id="lifeIcons">
+                <i class="fas fa-heart text-red-500"></i>
+                <i class="fas fa-heart text-red-500"></i>
+                <i class="fas fa-heart text-red-500"></i>
+            </div>
+        </div>
+
+        <button onclick="window.resumeExam()" class="bg-white text-red-600 px-8 py-3 rounded-full font-bold shadow-lg hover:bg-gray-100 transition transform hover:scale-105">
+            KEMBALI KE UJIAN
+        </button>
+        <p class="text-xs mt-4 opacity-70">Sistem mencatat setiap aktivitas mencurigakan.</p>
+    </div>
+
     <!-- 1. HALAMAN LOGIN PESERTA (DATA DIRI) -->
     <div id="loginOverlay" class="fixed inset-0 bg-slate-900 z-[150] hidden flex flex-col items-center justify-center p-4">
         <div class="bg-white rounded-xl shadow-2xl w-full max-w-sm overflow-hidden relative">
-            
-            <!-- TOMBOL ADMIN DIHAPUS (Gunakan ketuk logo 4x) -->
             
             <div class="bg-blue-600 p-6 text-center relative z-10">
                 <!-- LOGO SEKOLAH DENGAN FUNGSI KLIK RAHASIA -->
@@ -216,6 +256,54 @@
                         <div id="forceModeStatus" class="mt-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Status: Mengikuti Jadwal</div>
                     </div>
 
+                    <!-- TOGGLE ANTI CHEAT (BARU) -->
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <h4 class="font-bold text-gray-700">Fitur Anti-Curang (Proteksi)</h4>
+                                <p class="text-xs text-gray-500">Jika AKTIF: Blokir copy-paste, klik kanan, dan deteksi pindah tab (nyawa 3).</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="toggleAntiCheat" class="sr-only peer" onchange="window.toggleAntiCheat()">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-red-600"></div>
+                            </label>
+                        </div>
+                        <div id="antiCheatStatus" class="mt-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Status: Proteksi Aktif</div>
+                    </div>
+
+                    <!-- SETTING GEOFENCING (BARU) -->
+                    <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h4 class="font-bold text-gray-700">Batasi Lokasi Ujian (Geofencing)</h4>
+                                <p class="text-xs text-gray-500">Siswa hanya bisa login jika berada dalam radius tertentu dari sekolah.</p>
+                            </div>
+                            <label class="relative inline-flex items-center cursor-pointer">
+                                <input type="checkbox" id="toggleGeoCheck" class="sr-only peer" onchange="window.toggleGeoCheck()">
+                                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+                            </label>
+                        </div>
+                        
+                        <div id="geoSettings" class="space-y-3">
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Latitude</label>
+                                    <input type="text" id="inputLat" class="w-full p-2 border rounded text-sm bg-gray-50 font-mono" placeholder="-7.919827">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-bold text-gray-500 mb-1">Longitude</label>
+                                    <input type="text" id="inputLng" class="w-full p-2 border rounded text-sm bg-gray-50 font-mono" placeholder="110.298794">
+                                </div>
+                            </div>
+                            <div>
+                                <label class="block text-xs font-bold text-gray-500 mb-1">Radius Maksimal (Meter)</label>
+                                <input type="number" id="inputRadius" class="w-full p-2 border rounded text-sm bg-gray-50 font-mono" placeholder="300">
+                            </div>
+                            <button onclick="window.saveGeoSettings()" class="bg-blue-600 text-white px-4 py-2 rounded text-xs font-bold w-full hover:bg-blue-700 transition"><i class="fas fa-save mr-1"></i> Simpan Koordinat</button>
+                        </div>
+                        <div id="geoStatus" class="mt-2 text-xs font-bold text-gray-400 uppercase tracking-wider">Status: Lokasi Bebas</div>
+                    </div>
+
                     <!-- KELOLA TAMPILAN MAPEL (VISIBILITY) -->
                     <div class="bg-white p-5 rounded-lg shadow-sm border border-gray-200">
                         <div class="border-b border-gray-100 pb-3 mb-3">
@@ -351,11 +439,24 @@
 
         let forcedMode = false;
         let showScore = false; 
+        let antiCheatEnabled = true; 
+        let geoCheckEnabled = false; // NEW STATE
+        
+        // GEO DEFAULTS
+        let schoolLat = -7.919827;
+        let schoolLng = 110.298794;
+        let allowedRadius = 300;
+
         let examHistory = []; 
         let activeSubjectIndex = -1;
         let editingTabIndex = 0;
         let studentData = { name: '', class: '', number: '' };
-        let currentPdfZoom = 1; // Variabel Zoom Baru
+        let currentPdfZoom = 1;
+
+        // --- ANTI-CHEAT VARIABLES ---
+        let violations = 0;
+        const MAX_VIOLATIONS = 3;
+        let examStarted = false;
 
         // --- LOGIC KLIK RAHASIA LOGO (KETUK 4 KALI) ---
         let logoClicks = 0;
@@ -376,7 +477,125 @@
                 }, 800);
             }
         }
+        
+        // --- ANTI-CHEAT LOGIC ---
+        document.addEventListener('contextmenu', event => { 
+            if(antiCheatEnabled) event.preventDefault(); 
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (!antiCheatEnabled) return;
+            // F12, Ctrl+U, Ctrl+S, Ctrl+P, Ctrl+Shift+I
+            if (e.key === 'F12' || 
+               (e.ctrlKey && (e.key === 'u' || e.key === 's' || e.key === 'p' || e.key === 'c' || e.key === 'v')) ||
+               (e.ctrlKey && e.shiftKey && e.key === 'I')) {
+                e.preventDefault();
+                e.stopPropagation();
+                return false;
+            }
+        });
+
+        document.addEventListener('visibilitychange', function() {
+            if (!antiCheatEnabled) return;
+            if (examStarted && document.hidden) {
+                recordViolation();
+            }
+        });
+
+        function recordViolation() {
+            if(!examStarted) return;
+            violations++;
+            updateLifeIcons();
+            
+            const overlay = document.getElementById('cheatOverlay');
+            overlay.style.display = 'flex'; // Show Warning
+
+            if (violations >= MAX_VIOLATIONS) {
+                alert("PELANGGARAN MAKSIMAL TERCAPAI!\n\nAnda telah meninggalkan halaman ujian terlalu sering.\nJawaban Anda akan dikirim secara otomatis dan sesi diakhiri.");
+                window.submitExam(true); // Force submit
+            }
+        }
+
+        window.resumeExam = function() {
+            const overlay = document.getElementById('cheatOverlay');
+            overlay.style.display = 'none';
+        }
+
+        function updateLifeIcons() {
+            const container = document.getElementById('lifeIcons');
+            const livesLeft = MAX_VIOLATIONS - violations;
+            let html = '';
+            for(let i=0; i<MAX_VIOLATIONS; i++) {
+                if (i < livesLeft) {
+                    html += '<i class="fas fa-heart text-red-500"></i>'; 
+                } else {
+                    html += '<i class="far fa-heart text-gray-400"></i>'; 
+                }
+            }
+            container.innerHTML = html;
+        }
         // ----------------------------------------------
+
+        // --- LOCATION LOGIC ---
+        function getDistanceFromLatLonInMeters(lat1,lon1,lat2,lon2) {
+            var R = 6371; // Radius of the earth in km
+            var dLat = deg2rad(lat2-lat1);  
+            var dLon = deg2rad(lon2-lon1); 
+            var a = 
+                Math.sin(dLat/2) * Math.sin(dLat/2) +
+                Math.cos(deg2rad(lat1)) * Math.cos(deg2rad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2)
+                ; 
+            var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+            var d = R * c; // Distance in km
+            return d * 1000; // Meters
+        }
+
+        function deg2rad(deg) { return deg * (Math.PI/180) }
+
+        async function verifyUserPosition() {
+            if (!geoCheckEnabled) {
+                // Skip if disabled
+                completeLogin();
+                return;
+            }
+
+            document.getElementById('location-loader').style.display = 'flex';
+
+            if (!navigator.geolocation) {
+                alert("Browser Anda tidak mendukung Geolocation.");
+                document.getElementById('location-loader').style.display = 'none';
+                return;
+            }
+
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    const userLat = position.coords.latitude;
+                    const userLng = position.coords.longitude;
+                    const dist = getDistanceFromLatLonInMeters(userLat, userLng, schoolLat, schoolLng);
+                    
+                    document.getElementById('location-loader').style.display = 'none';
+
+                    if (dist <= allowedRadius) {
+                        completeLogin();
+                    } else {
+                        alert(`AKSES DITOLAK!\n\nPosisi Anda: ${Math.round(dist)} meter dari sekolah.\nBatas Maksimal: ${allowedRadius} meter.\n\nSilakan mendekat ke area sekolah.`);
+                    }
+                },
+                (error) => {
+                    document.getElementById('location-loader').style.display = 'none';
+                    let msg = "Gagal mendeteksi lokasi.";
+                    if(error.code == error.PERMISSION_DENIED) msg = "Izin lokasi ditolak! Harap izinkan akses lokasi untuk ujian.";
+                    alert(msg);
+                },
+                { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+            );
+        }
+
+        function completeLogin() {
+            window.closeModal('loginOverlay');
+            window.checkAccess();
+        }
+        // ----------------------
 
         async function initApp() {
             renderAdminTabs();
@@ -388,15 +607,25 @@
                         if (data.subjects) {
                             subjects = subjects.map((def, i) => {
                                 const dbSub = data.subjects[i] || {};
-                                return { ...def, ...dbSub, isActive: dbSub.isActive !== false }; // Merge with safety
+                                return { ...def, ...dbSub, isActive: dbSub.isActive !== false }; 
                             });
                         }
                         if (data.forcedMode !== undefined) forcedMode = data.forcedMode;
                         if (data.showScore !== undefined) showScore = data.showScore;
+                        if (data.antiCheatEnabled !== undefined) antiCheatEnabled = data.antiCheatEnabled;
+                        
+                        // LOAD GEO SETTINGS
+                        if (data.geoCheckEnabled !== undefined) geoCheckEnabled = data.geoCheckEnabled;
+                        if (data.schoolLat !== undefined) schoolLat = data.schoolLat;
+                        if (data.schoolLng !== undefined) schoolLng = data.schoolLng;
+                        if (data.allowedRadius !== undefined) allowedRadius = data.allowedRadius;
+
                         updateForceModeUI(); 
                         updateShowScoreUI();
+                        updateAntiCheatUI();
+                        updateGeoUI(); // Update Admin inputs
                         updateTabNames();
-                        renderVisibilityList(); // Update visibility toggles
+                        renderVisibilityList(); 
                     } else { 
                         saveConfigToFirebase(); 
                     }
@@ -494,8 +723,9 @@
             const number = document.getElementById('loginNumber').value.trim();
             if (!name || !kelas || !number) { alert("Harap lengkapi data!"); return; }
             studentData = { name, class: kelas, number };
-            window.closeModal('loginOverlay');
-            window.checkAccess();
+            
+            // TRIGGER LOCATION CHECK
+            verifyUserPosition();
         }
 
         window.initLJK = function() {
@@ -589,6 +819,47 @@
             updateShowScoreUI();
             try { await setDoc(doc(db, CONFIG_DOC_PATH), { showScore: showScore }, { merge: true }); } catch(e) { checkbox.checked = !checkbox.checked; }
         }
+        
+        window.toggleAntiCheat = async function() {
+            const checkbox = document.getElementById('toggleAntiCheat');
+            antiCheatEnabled = checkbox.checked;
+            updateAntiCheatUI();
+            try { await setDoc(doc(db, CONFIG_DOC_PATH), { antiCheatEnabled: antiCheatEnabled }, { merge: true }); } 
+            catch(e) { checkbox.checked = !checkbox.checked; }
+        }
+
+        // NEW: TOGGLE GEO CHECK
+        window.toggleGeoCheck = async function() {
+            const checkbox = document.getElementById('toggleGeoCheck');
+            geoCheckEnabled = checkbox.checked;
+            updateGeoUI();
+            // We save everything together via saveGeoSettings, or separate? Let's save on toggle too for better UX
+            try { await setDoc(doc(db, CONFIG_DOC_PATH), { geoCheckEnabled: geoCheckEnabled }, { merge: true }); }
+            catch(e) { checkbox.checked = !checkbox.checked; }
+        }
+
+        window.saveGeoSettings = async function() {
+            const lat = parseFloat(document.getElementById('inputLat').value);
+            const lng = parseFloat(document.getElementById('inputLng').value);
+            const rad = parseInt(document.getElementById('inputRadius').value);
+            
+            if (isNaN(lat) || isNaN(lng) || isNaN(rad)) {
+                alert("Koordinat atau Radius tidak valid!");
+                return;
+            }
+
+            schoolLat = lat; schoolLng = lng; allowedRadius = rad;
+            
+            try { 
+                await setDoc(doc(db, CONFIG_DOC_PATH), { 
+                    schoolLat: schoolLat, 
+                    schoolLng: schoolLng, 
+                    allowedRadius: allowedRadius 
+                }, { merge: true }); 
+                alert("Pengaturan Lokasi Tersimpan!");
+            } catch(e) { alert("Gagal simpan: " + e.message); }
+        }
+
         function updateForceModeUI() {
             const checkbox = document.getElementById('toggleForceMode'); if(checkbox) checkbox.checked = forcedMode;
             document.getElementById('forceModeStatus').innerText = forcedMode ? "Status: MODE MANUAL AKTIF (Buka Semua)" : "Status: Mengikuti Jadwal Otomatis";
@@ -596,6 +867,20 @@
         function updateShowScoreUI() {
             const checkbox = document.getElementById('toggleShowScore'); if(checkbox) checkbox.checked = showScore;
             document.getElementById('showScoreStatus').innerText = showScore ? "Status: NILAI DITAMPILKAN" : "Status: Nilai Disembunyikan";
+        }
+        function updateAntiCheatUI() {
+            const checkbox = document.getElementById('toggleAntiCheat'); if(checkbox) checkbox.checked = antiCheatEnabled;
+            document.getElementById('antiCheatStatus').innerText = antiCheatEnabled ? "Status: PROTEKSI AKTIF (KETAT)" : "Status: Proteksi Nonaktif";
+            document.body.oncontextmenu = antiCheatEnabled ? () => false : null;
+        }
+        
+        function updateGeoUI() {
+            const checkbox = document.getElementById('toggleGeoCheck'); if(checkbox) checkbox.checked = geoCheckEnabled;
+            document.getElementById('geoStatus').innerText = geoCheckEnabled ? "Status: TERKUNCI LOKASI (GPS)" : "Status: Lokasi Bebas";
+            
+            document.getElementById('inputLat').value = schoolLat;
+            document.getElementById('inputLng').value = schoolLng;
+            document.getElementById('inputRadius').value = allowedRadius;
         }
 
         window.saveCurrentTab = async function() {
@@ -605,7 +890,6 @@
             const rawKey = document.getElementById('inputKey').value.toUpperCase().replace(/[^A-D]/g, '');
             if (rawKey.length !== JUMLAH_SOAL && rawKey.length > 0) { if(!confirm(`⚠️ PERINGATAN: Jumlah kunci (${rawKey.length}) tidak 40.\nTetap simpan?`)) return; }
             
-            // Preserve existing isActive state
             const currentActive = subjects[idx].isActive;
             
             subjects[idx] = { 
@@ -621,26 +905,23 @@
                 await setDoc(doc(db, CONFIG_DOC_PATH), { subjects: subjects }, { merge: true });
                 document.getElementById('formSlotName').innerText = subjects[idx].name;
                 updateTabNames();
-                renderVisibilityList(); // Update General tab list
+                renderVisibilityList(); 
                 const sel = document.getElementById('mapelSelector'); if(sel && sel.options[idx]) sel.options[idx].text = subjects[idx].name;
                 alert(`Pengaturan ${subjects[idx].name} TERSIMPAN!`);
             } catch(e) { alert("Gagal simpan: " + e.message); }
         }
-        async function saveConfigToFirebase() { await setDoc(doc(db, CONFIG_DOC_PATH), { subjects: subjects, forcedMode: forcedMode, showScore: showScore }, { merge: true }); }
+        async function saveConfigToFirebase() { await setDoc(doc(db, CONFIG_DOC_PATH), { subjects: subjects, forcedMode: forcedMode, showScore: showScore, antiCheatEnabled: antiCheatEnabled, geoCheckEnabled: geoCheckEnabled, schoolLat: schoolLat, schoolLng: schoolLng, allowedRadius: allowedRadius }, { merge: true }); }
 
         window.checkAccess = function() {
             const blocker = document.getElementById('blockerOverlay'); const selector = document.getElementById('mapelSelector'); const labelMapel = document.getElementById('headerMapel');
             let activeIndices = [];
             
-            // Logic with strict isActive check
-            // If admin has unchecked the mapel, it is NEVER shown, regardless of mode.
             if (forcedMode) { 
-                // In Manual Mode, show ALL that are marked Active
                 activeIndices = subjects.map((s, i) => (s.isActive !== false) ? i : -1).filter(i => i !== -1);
             } else {
                 const now = new Date();
                 subjects.forEach((sub, idx) => { 
-                    if (sub.isActive !== false && sub.start && sub.end) { // Check active AND schedule
+                    if (sub.isActive !== false && sub.start && sub.end) { 
                         const start = new Date(sub.start); 
                         const end = new Date(sub.end); 
                         if (now >= start && now <= end) activeIndices.push(idx); 
@@ -656,7 +937,6 @@
                 labelMapel.innerText = "Menunggu Jadwal..."; 
             } else { 
                 blocker.classList.add('hidden'); 
-                // REFRESH SELECTOR if content changed
                 const currentOptions = Array.from(selector.options).map(o => o.value).join(','); 
                 const newOptions = activeIndices.join(','); 
                 
@@ -670,21 +950,16 @@
                     }); 
                 }
 
-                // ALWAYS SHOW SELECTOR if there are active exams (User Request fix)
-                // This ensures the dropdown is always visible for selection/verification
                 labelMapel.classList.add('hidden'); 
                 selector.classList.remove('hidden'); 
                 
-                // Logic to handle if current exam becomes disabled
                 let targetIndex = activeSubjectIndex; 
                 if (!activeIndices.includes(parseInt(activeSubjectIndex))) { 
-                    // If current selection is gone or invalid, default to first available
                     targetIndex = activeIndices[0]; 
                     window.loadExam(targetIndex); 
                 } 
                 selector.value = targetIndex; 
                 
-                // Ensure displayed text is correct
                 if (selector.options[selector.selectedIndex]) { 
                     selector.options[selector.selectedIndex].text = subjects[activeSubjectIndex].name; 
                 }
@@ -695,7 +970,7 @@
             const list = document.getElementById('scheduleList'); 
             list.innerHTML = ''; 
             subjects.forEach((sub, idx) => { 
-                if(sub.isActive !== false && sub.start && sub.end) { // Only list active subjects
+                if(sub.isActive !== false && sub.start && sub.end) { 
                     const sTime = new Date(sub.start).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}); 
                     const eTime = new Date(sub.end).toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'}); 
                     list.innerHTML += `<li class="border-b border-slate-700 pb-1 last:border-0"><span class="text-yellow-400 font-bold block text-xs">Mapel ${idx+1}: ${sub.name}</span><span class="text-slate-400 text-xs">${sTime} - ${eTime}</span></li>`; 
@@ -710,23 +985,19 @@
             const frame = document.getElementById('pdfFrame'); const ph = document.getElementById('pdfPlaceholder');
             const sel = document.getElementById('mapelSelector'); if(sel && !sel.classList.contains('hidden')) sel.value = index;
             
+            examStarted = true;
+            violations = 0;
+            updateLifeIcons();
+
             const cleanUrl = sub.url ? sub.url.trim() : '';
             if (cleanUrl) { 
                 let finalSrc = cleanUrl;
-                
-                // LOGIKA KHUSUS GOOGLE DRIVE
                 if (cleanUrl.includes('drive.google.com')) {
-                    // Konversi link 'view' atau 'share' menjadi 'preview' agar bisa di-embed
-                    // Contoh: https://drive.google.com/file/d/XYZ/view?usp=sharing -> https://drive.google.com/file/d/XYZ/preview
                     finalSrc = cleanUrl.replace(/\/view.*/, '/preview').replace(/\/sharing.*/, '/preview');
                 } else {
-                    // Jika BUKAN Google Drive (misal hosting sekolah/Github), gunakan Google Docs Viewer
                     finalSrc = `https://docs.google.com/viewer?url=${cleanUrl}&embedded=true`;
                 }
-
-                // Append toolbar hiding param (works for native viewer)
                 if(!finalSrc.includes('#')) finalSrc += "#toolbar=0&navpanes=0&scrollbar=0";
-
                 if(frame.src !== finalSrc) frame.src = finalSrc; 
                 ph.classList.add('hidden'); 
             } else { 
@@ -736,12 +1007,10 @@
         }
         window.reloadPDF = function() { document.getElementById('pdfFrame').src = document.getElementById('pdfFrame').src; }
 
-        // FUNGSI ZOOM PDF BARU
         window.changePdfZoom = function(delta) {
             let newZoom = currentPdfZoom + delta;
             if(newZoom < 0.5) newZoom = 0.5;
             if(newZoom > 2.5) newZoom = 2.5;
-            // Round to avoid floating point weirdness
             newZoom = Math.round(newZoom * 10) / 10;
             applyPdfZoom(newZoom);
         }
@@ -754,45 +1023,45 @@
             currentPdfZoom = zoom;
             const frame = document.getElementById('pdfFrame');
             const label = document.getElementById('zoomLabel');
-            
             if(frame) {
                 frame.style.transform = `scale(${zoom})`;
-                // Compensate width and height percentages to keep iframe filling container
                 frame.style.width = `${100 / zoom}%`;
                 frame.style.height = `${100 / zoom}%`;
             }
-            
             if(label) {
                 label.innerText = `${Math.round(zoom * 100)}%`;
             }
         }
 
-        window.submitExam = async function() {
+        window.submitExam = async function(forceSubmit = false) {
             if (activeSubjectIndex === -1) return; if(!studentData.name) return alert('Data tidak valid.');
             
-            // --- VALIDASI JAWABAN KOSONG ---
-            let unanswered = [];
-            for(let i=1; i<=JUMLAH_SOAL; i++){
-                const row = document.getElementById(`row-q${i}`);
-                if(row) { row.classList.remove('bg-red-50', 'border-red-500', 'ring-1', 'ring-red-500'); row.classList.add('bg-white', 'border-slate-200'); }
-            }
-            for(let i=1; i<=JUMLAH_SOAL; i++){
-                const el = document.querySelector(`input[name="q${i}"]:checked`);
-                if (!el) {
-                    unanswered.push(i);
+            if (!forceSubmit) {
+                let unanswered = [];
+                for(let i=1; i<=JUMLAH_SOAL; i++){
                     const row = document.getElementById(`row-q${i}`);
-                    if(row) { row.classList.remove('bg-white', 'border-slate-200'); row.classList.add('bg-red-50', 'border-red-500', 'ring-1', 'ring-red-500'); }
+                    if(row) { row.classList.remove('bg-red-50', 'border-red-500', 'ring-1', 'ring-red-500'); row.classList.add('bg-white', 'border-slate-200'); }
+                }
+                for(let i=1; i<=JUMLAH_SOAL; i++){
+                    const el = document.querySelector(`input[name="q${i}"]:checked`);
+                    if (!el) {
+                        unanswered.push(i);
+                        const row = document.getElementById(`row-q${i}`);
+                        if(row) { row.classList.remove('bg-white', 'border-slate-200'); row.classList.add('bg-red-50', 'border-red-500', 'ring-1', 'ring-red-500'); }
+                    }
+                }
+                if (unanswered.length > 0) {
+                    const firstMiss = document.getElementById(`row-q${unanswered[0]}`);
+                    if(firstMiss) firstMiss.scrollIntoView({behavior: 'smooth', block: 'center'});
+                    let listStr = unanswered.join(', ');
+                    if (unanswered.length > 15) listStr = unanswered.slice(0, 15).join(', ') + '...';
+                    if(!confirm(`⚠️ PERINGATAN!\n\nAnda belum menjawab soal nomor:\n${listStr}\n\nApakah Anda yakin ingin tetap mengirim? (Nilai mungkin tidak maksimal)`)) return;
+                } else {
+                    if(!confirm(`Halo ${studentData.name}, jawaban sudah lengkap.\nYakin ingin mengirim jawaban ke server?`)) return;
                 }
             }
-            if (unanswered.length > 0) {
-                const firstMiss = document.getElementById(`row-q${unanswered[0]}`);
-                if(firstMiss) firstMiss.scrollIntoView({behavior: 'smooth', block: 'center'});
-                let listStr = unanswered.join(', ');
-                if (unanswered.length > 15) listStr = unanswered.slice(0, 15).join(', ') + '...';
-                if(!confirm(`⚠️ PERINGATAN!\n\nAnda belum menjawab soal nomor:\n${listStr}\n\nApakah Anda yakin ingin tetap mengirim? (Nilai mungkin tidak maksimal)`)) return;
-            } else {
-                if(!confirm(`Halo ${studentData.name}, jawaban sudah lengkap.\nYakin ingin mengirim jawaban ke server?`)) return;
-            }
+
+            examStarted = false;
 
             const sub = subjects[activeSubjectIndex]; const key = sub.key || ''; 
             let correct = 0; for(let i=1; i<=JUMLAH_SOAL; i++){ const el = document.querySelector(`input[name="q${i}"]:checked`); const val = el ? el.value : 'X'; const keyChar = key[i-1] || '?'; if(val === keyChar) correct++; }
@@ -800,7 +1069,13 @@
             const score = Number.isInteger(scoreRaw) ? scoreRaw : parseFloat(scoreRaw.toFixed(2));
 
             const wibTime = new Date().toLocaleString('id-ID', { timeZone: 'Asia/Jakarta' });
-            const resultData = { time: wibTime, mapel: sub.name, name: studentData.name, class: studentData.class, number: studentData.number, score: score, correct: correct, detail: `${correct} Benar, ${JUMLAH_SOAL-correct} Salah`, timestamp: Date.now() };
+            
+            let detailStr = `${correct} Benar, ${JUMLAH_SOAL-correct} Salah`;
+            if (violations > 0) {
+                detailStr += ` (Pelanggaran: ${violations})`;
+            }
+
+            const resultData = { time: wibTime, mapel: sub.name, name: studentData.name, class: studentData.class, number: studentData.number, score: score, correct: correct, detail: detailStr, timestamp: Date.now() };
             const uniqueDocId = `${sub.name}_${studentData.class}_${studentData.number}_${studentData.name}`.replace(/[^a-zA-Z0-9]/g, '_').toUpperCase();
             const docRef = doc(db, RESULTS_COLLECTION, uniqueDocId);
             try {
@@ -810,6 +1085,11 @@
                 if (showScore) { document.getElementById('resScore').innerText = score; document.getElementById('resCorrect').innerText = correct; document.getElementById('resWrong').innerText = JUMLAH_SOAL - correct; document.getElementById('scoreContainer').classList.remove('hidden'); document.getElementById('hiddenScoreMsg').classList.add('hidden'); document.getElementById('resTitle').innerText = "Hasil Ujian"; } 
                 else { document.getElementById('scoreContainer').classList.add('hidden'); document.getElementById('hiddenScoreMsg').classList.remove('hidden'); document.getElementById('resTitle').innerText = "Terkirim!"; }
                 document.getElementById('resultModal').classList.remove('hidden');
+                
+                if(forceSubmit) {
+                    document.getElementById('cheatOverlay').style.display = 'none';
+                }
+
             } catch(e) { alert("Gagal kirim: " + e.message); }
         }
 
@@ -870,13 +1150,18 @@
             if(examHistory.length === 0) return alert("Data kosong.");
             let html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel" xmlns="http://www.w3.org/TR/REC-html40"><head><!--[if gte mso 9]><xml><x:ExcelWorkbook><x:ExcelWorksheets><x:ExcelWorksheet><x:Name>Rekap Nilai</x:Name><x:WorksheetOptions><x:DisplayGridlines/></x:WorksheetOptions></x:ExcelWorksheet></x:ExcelWorksheets></x:ExcelWorkbook></xml><![endif]--><meta charset="utf-8"></head><body>';
             html += '<table border="1" style="font-family: Arial, sans-serif; border-collapse: collapse;">';
-            html += '<thead><tr style="background-color: #f0f0f0;"><th>Waktu</th><th>Mata Pelajaran</th><th>Nama Siswa</th><th>Kelas</th><th>No Absen</th><th>Benar</th><th>Salah</th><th>Nilai Akhir</th></tr></thead>';
+            html += '<thead><tr style="background-color: #f0f0f0;"><th>Waktu</th><th>Mata Pelajaran</th><th>Nama Siswa</th><th>Kelas</th><th>No Absen</th><th>Benar</th><th>Salah</th><th>Nilai Akhir</th><th>Info Tambahan</th></tr></thead>';
             html += '<tbody>';
             examHistory.forEach(r => { 
                 const correct = r.correct || 0;
                 const wrong = JUMLAH_SOAL - correct;
                 const score = r.score !== undefined ? r.score : 0;
-                html += `<tr><td>${r.time}</td><td>${r.mapel}</td><td>${r.name}</td><td style="text-align:center">${r.class}</td><td style="text-align:center">${r.number}</td><td style="text-align:center">${correct}</td><td style="text-align:center">${wrong}</td><td style="text-align:center; font-weight:bold;">${score}</td></tr>`; 
+                // Parse detail string for "Pelanggaran"
+                let violationInfo = "-";
+                if(r.detail && r.detail.includes("Pelanggaran")) {
+                    violationInfo = r.detail.split('(')[1].replace(')','');
+                }
+                html += `<tr><td>${r.time}</td><td>${r.mapel}</td><td>${r.name}</td><td style="text-align:center">${r.class}</td><td style="text-align:center">${r.number}</td><td style="text-align:center">${correct}</td><td style="text-align:center">${wrong}</td><td style="text-align:center; font-weight:bold;">${score}</td><td>${violationInfo}</td></tr>`; 
             });
             html += '</tbody></table></body></html>';
             const blob = new Blob([html], {type: 'application/vnd.ms-excel'}); 
