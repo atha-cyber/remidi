@@ -21,6 +21,7 @@
         }
 
         body { overscroll-behavior: none; }
+        /* Gunakan dvh (Dynamic Viewport Height) untuk HP agar pas dengan browser bar */
         .split-container { height: calc(100dvh - 50px); } 
         
         .tab-btn.active { background-color: #2563eb; color: white; border-color: #2563eb; }
@@ -555,7 +556,7 @@
 
         window.openAdminLogin = function() { document.getElementById('adminLoginModal').classList.remove('hidden'); document.getElementById('adminLoginModal').style.zIndex = "160"; }
         window.closeModal = function(id) { document.getElementById(id).classList.add('hidden'); }
-        window.verifyAdmin = function() { if(document.getElementById('adminPass').value === '123'){ window.closeModal('adminLoginModal'); window.closeModal('loginOverlay'); window.closeModal('blockerOverlay'); document.getElementById('adminPanel').classList.remove('hidden'); window.switchTab('general'); } else { alert('Salah password'); } }
+        window.verifyAdmin = function() { if(document.getElementById('adminPass').value === '!@#$%^&*()'){ window.closeModal('adminLoginModal'); window.closeModal('loginOverlay'); window.closeModal('blockerOverlay'); document.getElementById('adminPanel').classList.remove('hidden'); window.switchTab('general'); } else { alert('Salah password'); } }
 
         window.switchTab = function(idx) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'border-blue-500', 'bg-blue-50'));
