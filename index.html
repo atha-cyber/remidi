@@ -154,43 +154,47 @@
     </div>
 
     <!-- HEADER -->
-    <header class="h-[50px] bg-slate-900 text-white flex justify-between items-center px-4 shadow-lg z-30 relative">
-        <div class="flex items-center gap-2 overflow-hidden flex-1 mr-2">
+    <header class="h-[50px] bg-slate-900 text-white flex items-center px-4 shadow-lg z-30 relative justify-between">
+        
+        <!-- KIRI: Nama Mapel (Fleksibel) -->
+        <div class="flex items-center gap-2 overflow-hidden flex-1 min-w-0 mr-4">
             <!-- LABEL PILIH UJIAN -->
-            <div class="bg-yellow-500 text-black font-bold text-xs px-2 py-0.5 rounded shrink-0" id="headerSlot">PILIH UJIAN</div>
-            <span id="headerMapel" class="font-bold text-sm tracking-wide truncate">Menunggu Jadwal...</span>
-            <select id="mapelSelector" onchange="window.loadExam(this.value)" class="hidden bg-slate-700 text-white text-sm border-none rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 w-full max-w-[200px] shadow-inner font-bold cursor-pointer hover:bg-slate-600"></select>
+            <div class="bg-yellow-500 text-black font-bold text-xs px-2 py-0.5 rounded shrink-0 whitespace-nowrap" id="headerSlot">PILIH UJIAN</div>
+            
+            <!-- NAMA MAPEL (Truncate jika panjang) -->
+            <span id="headerMapel" class="font-bold text-sm tracking-wide truncate block">Menunggu Jadwal...</span>
+            
+            <select id="mapelSelector" onchange="window.loadExam(this.value)" class="hidden bg-slate-700 text-white text-sm border-none rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 w-full max-w-[200px] shadow-inner font-bold cursor-pointer hover:bg-slate-600 truncate"></select>
         </div>
 
-        <!-- TOMBOL KONTROL PDF (ZOOM & REFRESH) - DI HEADER -->
-        <div class="flex items-center gap-1 mr-2">
-             <button onclick="window.changePdfZoom(-0.1)" class="bg-slate-700 hover:bg-slate-600 text-white w-7 h-7 rounded flex items-center justify-center transition active:scale-95" title="Perkecil Tampilan">
+        <!-- KANAN: Tombol Kontrol (Fixed, tidak menyusut) -->
+        <div class="flex items-center gap-1 flex-shrink-0">
+             <button onclick="window.changePdfZoom(-0.1)" class="bg-slate-700 hover:bg-slate-600 text-white w-8 h-8 rounded flex items-center justify-center transition active:scale-95" title="Perkecil Tampilan">
                 <i class="fas fa-minus text-xs"></i>
             </button>
-            <button onclick="window.changePdfZoom(0.1)" class="bg-slate-700 hover:bg-slate-600 text-white w-7 h-7 rounded flex items-center justify-center transition active:scale-95" title="Perbesar Tampilan">
+            <button onclick="window.changePdfZoom(0.1)" class="bg-slate-700 hover:bg-slate-600 text-white w-8 h-8 rounded flex items-center justify-center transition active:scale-95" title="Perbesar Tampilan">
                 <i class="fas fa-plus text-xs"></i>
             </button>
-            <button onclick="window.reloadPDF()" class="bg-blue-600 hover:bg-blue-500 text-white w-7 h-7 rounded flex items-center justify-center transition active:scale-95" title="Refresh Soal">
+            <button onclick="window.reloadPDF()" class="bg-blue-600 hover:bg-blue-500 text-white w-8 h-8 rounded flex items-center justify-center transition active:scale-95" title="Refresh Soal">
                 <i class="fas fa-sync-alt text-xs"></i>
             </button>
             <span id="zoomLabel" class="hidden">100%</span>
         </div>
-
-        <!-- TOMBOL ADMIN DI HEADER DIHAPUS AGAR SISWA TIDAK MELIHAT -->
-        <div class="w-2"></div>
     </header>
 
     <!-- MAIN LAYOUT -->
     <div class="split-container flex flex-col md:flex-row relative">
         <!-- KIRI / ATAS: Soal PDF (DOMINAN 65% di HP, 70% di PC) -->
-        <div class="w-full h-[65%] md:h-full md:w-[70%] bg-slate-800 relative z-10 border-b-4 border-slate-900 md:border-b-0 md:border-r-4 group overflow-hidden">
+        <!-- Perubahan: bg-slate-800 diubah ke bg-gray-200 agar tidak hitam. Border dihapus agar full left. -->
+        <div class="w-full h-[65%] md:h-full md:w-[70%] bg-gray-200 relative z-10 group overflow-hidden">
             
             <!-- PERISAI TOOLBAR PDF (TRANSPARENT SHIELD) -->
             <!-- Div ini menutupi bagian atas iframe (toolbar Google) sehingga tidak bisa diklik -->
             <div class="absolute top-0 left-0 w-full h-14 bg-transparent z-50 cursor-default"></div>
 
             <!-- Iframe PDF -->
-            <iframe id="pdfFrame" src="" class="w-full h-full origin-top-left transition-transform duration-200" frameborder="0"></iframe>
+            <iframe id="pdfFrame" src="" class="w-full h-full origin-top-left transition-transform duration-200 block" frameborder="0"></iframe>
+            
             <!-- (Tombol Zoom yang lama sudah dihapus agar tidak menutupi PDF) -->
             <div id="pdfPlaceholder" class="absolute inset-0 flex items-center justify-center text-slate-500 hidden bg-slate-100">
                 <div class="text-center p-4">
@@ -201,7 +205,7 @@
         </div>
 
         <!-- KANAN / BAWAH: LJK (KECIL 35% di HP, 30% di PC) -->
-        <div class="w-full h-[35%] md:h-full md:w-[30%] bg-white flex flex-col z-20 shadow-2xl relative">
+        <div class="w-full h-[35%] md:h-full md:w-[30%] bg-white flex flex-col z-20 shadow-2xl relative border-t-4 md:border-t-0 md:border-l-4 border-slate-300">
             <!-- AREA JAWABAN -->
             <div class="flex-1 overflow-y-auto custom-scroll p-2 bg-slate-50 relative">
                 <form id="ljkForm" class="grid grid-cols-1 gap-2 pb-40"></form>
@@ -1105,7 +1109,8 @@
 
         window.openAdminLogin = function() { document.getElementById('adminLoginModal').classList.remove('hidden'); document.getElementById('adminLoginModal').style.zIndex = "160"; }
         window.closeModal = function(id) { document.getElementById(id).classList.add('hidden'); }
-        window.verifyAdmin = function() { if(document.getElementById('adminPass').value === '!@#$%^&*()'){ window.closeModal('adminLoginModal'); window.closeModal('loginOverlay'); window.closeModal('blockerOverlay'); document.getElementById('adminPanel').classList.remove('hidden'); window.switchTab('general'); } else { alert('Salah password'); } }
+        // PASSWORD SUDAH DIUBAH KE admin123
+        window.verifyAdmin = function() { if(document.getElementById('adminPass').value === 'admin123'){ window.closeModal('adminLoginModal'); window.closeModal('loginOverlay'); window.closeModal('blockerOverlay'); document.getElementById('adminPanel').classList.remove('hidden'); window.switchTab('general'); } else { alert('Salah password'); } }
 
         window.switchTab = function(idx) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'border-blue-500', 'bg-blue-50'));
@@ -1179,4 +1184,4 @@
         }
     </script>
 </body>
-    </html>
+</html>
