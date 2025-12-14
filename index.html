@@ -2,6 +2,11 @@
 <html lang="id" translate="no" class="notranslate">
 <head>
     <meta charset="UTF-8">
+    <!-- ANTI-CACHE META TAGS (Wajib untuk Update Instan) -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    
     <meta name="google" content="notranslate">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>CBT Online Multi-Mapel (Secure Shield)</title>
@@ -56,6 +61,14 @@
             flex-direction: column; justify-content: center; align-items: center;
             color: white; text-align: center; padding: 20px;
         }
+
+        /* OFFLINE BANNER */
+        #offlineBanner {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background-color: #dc2626; color: white;
+            text-align: center; font-size: 12px; font-weight: bold;
+            padding: 5px; z-index: 9999; display: none;
+        }
     </style>
 </head>
 <body class="bg-gray-100 h-screen overflow-hidden font-sans text-gray-800">
@@ -71,6 +84,11 @@
         <i class="fas fa-map-marker-alt text-4xl text-red-500 mb-4 animate-bounce"></i>
         <p class="font-bold text-lg">Memeriksa Lokasi Anda...</p>
         <p class="text-xs text-gray-400 mt-2">Pastikan GPS aktif & izinkan akses lokasi browser</p>
+    </div>
+
+    <!-- OFFLINE BANNER -->
+    <div id="offlineBanner">
+        <i class="fas fa-wifi-slash mr-2"></i> KONEKSI TERPUTUS - Jangan Refresh Halaman!
     </div>
 
     <!-- ANTI-CHEAT WARNING OVERLAY -->
@@ -168,6 +186,12 @@
             <select id="mapelSelector" onchange="window.loadExam(this.value)" class="hidden bg-slate-700 text-white text-sm border-none rounded px-2 py-1 focus:ring-2 focus:ring-blue-500 w-full max-w-[200px] shadow-inner font-bold cursor-pointer hover:bg-slate-600 truncate"></select>
         </div>
 
+        <!-- TENGAH: TIMER (NEW) -->
+        <div id="timerContainer" class="hidden absolute left-1/2 transform -translate-x-1/2 top-2 bg-slate-800 border border-slate-600 px-3 py-1 rounded-full shadow-lg flex items-center gap-2 z-40">
+            <i class="fas fa-clock text-xs text-yellow-400"></i>
+            <span id="timerDisplay" class="font-mono font-bold text-sm text-white">00:00:00</span>
+        </div>
+
         <!-- KANAN: Tombol Kontrol (Fixed, tidak menyusut) -->
         <div class="flex items-center gap-1 flex-shrink-0">
              <button onclick="window.changePdfZoom(-0.1)" class="bg-slate-700 hover:bg-slate-600 text-white w-8 h-8 rounded flex items-center justify-center transition active:scale-95" title="Perkecil Tampilan">
@@ -207,12 +231,13 @@
         <div class="w-full h-[35%] md:h-full md:w-[30%] bg-white flex flex-col z-20 shadow-2xl relative border-t-4 md:border-t-0 md:border-l-4 border-slate-300">
             <!-- AREA JAWABAN -->
             <div class="flex-1 overflow-y-auto custom-scroll p-2 bg-slate-50 relative">
+                <div id="saveStatus" class="text-[10px] text-gray-400 text-center mb-1 italic opacity-0 transition-opacity duration-500">Menyimpan...</div>
                 <form id="ljkForm" class="grid grid-cols-1 gap-2 pb-40"></form>
             </div>
 
             <!-- TOMBOL KIRIM -->
             <div class="p-3 bg-white border-t border-slate-200 shadow-[0_-5px_15px_rgba(0,0,0,0.1)] z-30">
-                <button onclick="window.submitExam()" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition flex justify-center items-center gap-2">
+                <button onclick="window.submitExam()" id="btnSubmit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 rounded-lg shadow-lg active:scale-95 transition flex justify-center items-center gap-2">
                     <i class="fas fa-paper-plane"></i> SELESAI & KIRIM
                 </button>
             </div>
@@ -458,10 +483,27 @@
         let studentData = { name: '', class: '', number: '' };
         let currentPdfZoom = 1;
 
+        // --- TIMER & SAVING VARIABLES ---
+        let examTimerInterval;
+        
         // --- ANTI-CHEAT VARIABLES ---
         let violations = 0;
         const MAX_VIOLATIONS = 3;
         let examStarted = false;
+
+        // --- OFFLINE DETECTION ---
+        window.addEventListener('online', () => {
+            document.getElementById('offlineBanner').style.display = 'none';
+            document.getElementById('btnSubmit').disabled = false;
+            document.getElementById('btnSubmit').classList.remove('bg-gray-400');
+            document.getElementById('btnSubmit').classList.add('bg-blue-600');
+        });
+        window.addEventListener('offline', () => {
+            document.getElementById('offlineBanner').style.display = 'block';
+            document.getElementById('btnSubmit').disabled = true;
+            document.getElementById('btnSubmit').classList.remove('bg-blue-600');
+            document.getElementById('btnSubmit').classList.add('bg-gray-400');
+        });
 
         // --- LOGIC KLIK RAHASIA LOGO (KETUK 4 KALI) ---
         let logoClicks = 0;
@@ -740,7 +782,7 @@
                 const div = document.createElement('div');
                 div.id = `row-q${i}`; 
                 div.className = 'bg-white p-2.5 rounded-lg border border-slate-200 shadow-sm flex items-center justify-between hover:bg-blue-50 transition';
-                div.innerHTML = `<div class="w-8 text-center font-bold text-slate-600 text-sm">${i}.</div><div class="flex-1 flex justify-around pl-4">${OPSI.map(o => `<label class="cursor-pointer relative group"><input type="radio" name="q${i}" value="${o}" class="sr-only option-radio"><div class="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center font-bold text-slate-500 transition-all hover:border-blue-400">${o}</div></label>`).join('')}</div>`;
+                div.innerHTML = `<div class="w-8 text-center font-bold text-slate-600 text-sm">${i}.</div><div class="flex-1 flex justify-around pl-4">${OPSI.map(o => `<label class="cursor-pointer relative group"><input type="radio" name="q${i}" value="${o}" class="sr-only option-radio" onchange="window.saveAnswer(${i}, '${o}')"><div class="w-10 h-10 rounded-full border-2 border-slate-300 flex items-center justify-center font-bold text-slate-500 transition-all hover:border-blue-400">${o}</div></label>`).join('')}</div>`;
                 form.appendChild(div);
             }
             const classSelect = document.getElementById('loginClass');
@@ -750,6 +792,97 @@
             for (let i = 1; i <= 35; i++) { const option = document.createElement('option'); option.value = i; option.innerText = i; numberSelect.appendChild(option); }
         }
         window.initLJK();
+
+        // --- AUTO SAVE FUNCTIONS ---
+        window.saveAnswer = function(qNum, val) {
+            if(activeSubjectIndex === -1) return;
+            
+            // Key simpanan: mapelIndex_NamaSiswa
+            const storageKey = `cbt_save_${activeSubjectIndex}`;
+            let savedData = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            savedData[qNum] = val;
+            
+            localStorage.setItem(storageKey, JSON.stringify(savedData));
+            
+            // Visual feedback kecil
+            const status = document.getElementById('saveStatus');
+            status.style.opacity = '1';
+            setTimeout(() => { status.style.opacity = '0'; }, 1000);
+        }
+
+        function loadSavedAnswers(idx) {
+            const storageKey = `cbt_save_${idx}`;
+            const savedData = JSON.parse(localStorage.getItem(storageKey) || '{}');
+            
+            // Reset form first
+            document.querySelectorAll('input[type="radio"]').forEach(r => r.checked = false);
+            
+            // Apply saved
+            Object.keys(savedData).forEach(qNum => {
+                const val = savedData[qNum];
+                const radio = document.querySelector(`input[name="q${qNum}"][value="${val}"]`);
+                if(radio) radio.checked = true;
+            });
+        }
+
+        // --- TIMER FUNCTIONS ---
+        function startTimer(endTimeStr) {
+            clearInterval(examTimerInterval);
+            const display = document.getElementById('timerDisplay');
+            const container = document.getElementById('timerContainer');
+            
+            if(!endTimeStr) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            // SAFETY CHECK: Invalid Date
+            const endTime = new Date(endTimeStr).getTime();
+            if (isNaN(endTime)) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            container.classList.remove('hidden');
+
+            function tick() {
+                const now = new Date().getTime();
+                const diff = endTime - now;
+
+                if (diff <= 0) {
+                    clearInterval(examTimerInterval);
+                    display.innerText = "00:00:00";
+                    alert("WAKTU HABIS! Jawaban Anda akan dikirim otomatis.");
+                    window.submitExam(true); // Auto submit
+                    return;
+                }
+
+                // Format HH:MM:SS
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+                display.innerText = 
+                    (hours < 10 ? "0" + hours : hours) + ":" + 
+                    (minutes < 10 ? "0" + minutes : minutes) + ":" + 
+                    (seconds < 10 ? "0" + seconds : seconds);
+                
+                // Red color alert if < 5 mins
+                if (diff < 5 * 60 * 1000) {
+                    display.classList.add('text-red-500');
+                    display.classList.remove('text-white');
+                    display.classList.add('animate-pulse');
+                } else {
+                    display.classList.remove('text-red-500');
+                    display.classList.add('text-white');
+                    display.classList.remove('animate-pulse');
+                }
+            }
+
+            tick(); // Run immediately
+            examTimerInterval = setInterval(tick, 1000);
+        }
+
 
         document.getElementById('inputKey').addEventListener('input', function(e) {
             const clean = this.value.toUpperCase().replace(/[^A-D]/g, '');
@@ -946,6 +1079,12 @@
             violations = 0;
             updateLifeIcons();
 
+            // --- START TIMER IF SCHEDULED ---
+            startTimer(sub.end);
+            
+            // --- LOAD SAVED ANSWERS ---
+            loadSavedAnswers(index);
+
             const cleanUrl = sub.url ? sub.url.trim() : '';
             if (cleanUrl) { 
                 let finalSrc = cleanUrl;
@@ -1013,15 +1152,15 @@
                     let listStr = unanswered.join(', ');
                     if (unanswered.length > 15) listStr = unanswered.slice(0, 15).join(', ') + '...';
                     
-                    // PERUBAHAN: BLOCKIR JIKA ADA YANG KOSONG
                     alert(`⚠️ MAAF, TIDAK BISA KIRIM!\n\nAnda masih memiliki soal yang belum dijawab:\nNomor: ${listStr}\n\nSilakan lengkapi semua jawaban terlebih dahulu.`);
-                    return; // HENTIKAN PROSES DI SINI
+                    return; 
                 } else {
                     if(!confirm(`Halo ${studentData.name}, jawaban sudah lengkap.\nYakin ingin mengirim jawaban ke server?`)) return;
                 }
             }
 
             examStarted = false;
+            clearInterval(examTimerInterval); // STOP TIMER
 
             const sub = subjects[activeSubjectIndex]; const key = sub.key || ''; 
             let correct = 0; for(let i=1; i<=JUMLAH_SOAL; i++){ const el = document.querySelector(`input[name="q${i}"]:checked`); const val = el ? el.value : 'X'; const keyChar = key[i-1] || '?'; if(val === keyChar) correct++; }
@@ -1041,6 +1180,10 @@
             try {
                 const docSnap = await getDoc(docRef); if (docSnap.exists()) { return alert("⛔ AKSES DITOLAK! Data sudah ada."); }
                 await setDoc(docRef, resultData);
+                
+                // --- CLEAR AUTO SAVE DATA AFTER SUCCESS ---
+                localStorage.removeItem(`cbt_save_${activeSubjectIndex}`);
+
                 document.getElementById('resMapelName').innerText = sub.name;
                 if (showScore) { document.getElementById('resScore').innerText = score; document.getElementById('resCorrect').innerText = correct; document.getElementById('resWrong').innerText = JUMLAH_SOAL - correct; document.getElementById('scoreContainer').classList.remove('hidden'); document.getElementById('hiddenScoreMsg').classList.add('hidden'); document.getElementById('resTitle').innerText = "Hasil Ujian"; } 
                 else { document.getElementById('scoreContainer').classList.add('hidden'); document.getElementById('hiddenScoreMsg').classList.remove('hidden'); document.getElementById('resTitle').innerText = "Terkirim!"; }
@@ -1056,7 +1199,7 @@
         window.openAdminLogin = function() { document.getElementById('adminLoginModal').classList.remove('hidden'); document.getElementById('adminLoginModal').style.zIndex = "160"; }
         window.closeModal = function(id) { document.getElementById(id).classList.add('hidden'); }
         // PASSWORD SUDAH DIUBAH KE admin123
-        window.verifyAdmin = function() { if(document.getElementById('adminPass').value === 'admin123'){ window.closeModal('adminLoginModal'); window.closeModal('loginOverlay'); window.closeModal('blockerOverlay'); document.getElementById('adminPanel').classList.remove('hidden'); window.switchTab('general'); } else { alert('Salah password'); } }
+        window.verifyAdmin = function() { if(document.getElementById('adminPass').value.trim() === 'admin123'){ window.closeModal('adminLoginModal'); window.closeModal('loginOverlay'); window.closeModal('blockerOverlay'); document.getElementById('adminPanel').classList.remove('hidden'); window.switchTab('general'); } else { alert('Salah password'); } }
 
         window.switchTab = function(idx) {
             document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active', 'border-blue-500', 'bg-blue-50'));
@@ -1141,4 +1284,4 @@
         }
     </script>
 </body>
-                            </html>
+</html>
