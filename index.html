@@ -26,7 +26,7 @@
     <div id="dashboardView" class="fixed inset-0 bg-slate-50 z-[200] flex flex-col overflow-hidden">
         <div class="bg-blue-600 pb-12 pt-6 px-6 rounded-b-[2.5rem] shadow-lg shrink-0 text-center">
             <div class="relative z-10 flex flex-col items-center">
-                <img src="https://i.ibb.co.com/DfC8xNjL/LOGO-HD-SMP-4-removebg-preview.png" alt="Logo" class="h-24 w-auto mb-3 drop-shadow-md">
+                <img src="https://i.ibb.co.com/DfC8xNjL/LOGO-HD-SMP-4-removebg-preview.png" alt="Logo SMP 4" class="h-24 w-auto mb-3 drop-shadow-md">
                 <h1 class="text-2xl font-extrabold text-white">CBT Online</h1>
                 <span class="text-blue-200 text-xs font-bold tracking-widest uppercase">SMP Negeri 4 Pandak</span>
             </div>
@@ -36,14 +36,14 @@
             <div class="bg-white p-6 rounded-xl shadow-md border border-gray-100 mb-6">
                 <h3 class="font-bold text-gray-700 mb-4 text-sm uppercase tracking-wide border-b pb-2">Identitas Peserta</h3>
                 <div class="space-y-4">
-                    <input type="text" id="loginName" class="w-full p-3 border rounded-lg font-bold bg-gray-50 uppercase outline-none focus:ring-2 focus:ring-blue-500" placeholder="KETIK NAMA ANDA...">
+                    <input type="text" id="loginName" class="w-full p-3 border rounded-lg font-bold bg-gray-50 uppercase focus:ring-2 focus:ring-blue-500 outline-none" placeholder="KETIK NAMA ANDA...">
                     <div class="flex gap-3">
                         <select id="loginClass" class="w-1/2 p-3 border rounded-lg font-bold bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500"><option value="">- Kelas -</option></select>
                         <select id="loginNumber" class="w-1/2 p-3 border rounded-lg font-bold bg-gray-50 outline-none focus:ring-2 focus:ring-blue-500"><option value="">- No Absen -</option></select>
                     </div>
                 </div>
             </div>
-            <h3 class="font-bold text-gray-600 mb-3 px-2 text-sm uppercase">Ujian Tersedia</h3>
+            <h3 class="font-bold text-gray-600 mb-3 px-2 text-sm uppercase tracking-wide">Ujian Tersedia</h3>
             <div id="examGrid" class="grid grid-cols-1 gap-3"></div>
         </div>
     </div>
@@ -97,16 +97,14 @@
             const loader = document.getElementById('firebase-loader');
             const loaderText = document.getElementById('loaderText');
             loader.classList.remove('hidden');
-            
             try {
                 const response = await fetch('/api/get-config');
-                if (!response.ok) throw new Error('Gagal memanggil API Server');
-                
+                if (!response.ok) throw new Error('API Error');
                 const firebaseConfig = await response.json();
+                
                 const app = initializeApp(firebaseConfig);
                 auth = getAuth(app);
                 db = getFirestore(app);
-
                 await signInAnonymously(auth);
                 
                 onSnapshot(doc(db, CONFIG_DOC), (snap) => {
@@ -117,8 +115,7 @@
                 });
                 loader.classList.add('hidden');
             } catch (e) {
-                console.error(e);
-                loaderText.innerText = "Kesalahan: " + e.message;
+                loaderText.innerText = "Gagal terhubung ke server aman.";
             }
         }
 
@@ -170,15 +167,25 @@
             try {
                 await setDoc(doc(db, RES_COLL, resultId), {
                     name: studentData.name, class: studentData.class, number: studentData.number,
-                    mapel: s.name, time: new Date().toLocaleString(), status: "Terkirim"
+                    mapel: s.name, time: new Date().toLocaleString()
                 });
                 alert("Berhasil Terkirim!");
                 window.location.reload();
-            } catch (e) { alert("Gagal mengirim."); document.getElementById('firebase-loader').classList.add('hidden'); }
+            } catch (e) { alert("Gagal mengirim."); }
         };
 
-        const clsS = document.getElementById('loginClass'); ['7A','7B','8A','8B', '9A', '9B'].forEach(c=>{ const o=new Option(c,c); clsS.add(o); });
-        const numS = document.getElementById('loginNumber'); for(let i=1;i<=40;i++) numS.add(new Option(i,i));
+        // Populate Daftar Kelas (7A-9E)
+        const clsS = document.getElementById('loginClass');
+        ['7','8','9'].forEach(g => {
+            ['A','B','C','D','E'].forEach(l => {
+                const val = g + l;
+                clsS.add(new Option(val, val));
+            });
+        });
+
+        const numS = document.getElementById('loginNumber'); 
+        for(let i=1;i<=40;i++) numS.add(new Option(i,i));
+
         window.confirmExit = () => { if(confirm("Keluar?")) window.location.reload(); };
         window.reloadFrame = () => { const f=document.getElementById('pdfFrame'), s=f.src; f.src=''; setTimeout(()=>f.src=s, 100); };
 
